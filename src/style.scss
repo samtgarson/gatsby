@@ -1,0 +1,30 @@
+// Import UI library
+@import "brand/*";
+@import "layout/**";
+@import "patterns/**";
+
+
+
+input,
+textarea,
+button,
+select,
+a {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.right {
+    float: right;
+}
+
+.center {
+    text-align: center;
+}
+
+.spacer {
+    margin: 3.5em auto;
+}
