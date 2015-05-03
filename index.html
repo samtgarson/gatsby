@@ -1,27 +1,20 @@
 <!doctype html>
-
 <html lang="en" ng-app="app" ng-controller="appController as appCtrl">
-    <head>
-        <meta charset="utf-8">
-
-        <base href="/" >
-
-        <title ng-bind=""></title>
-        <meta name="description" content="">
-        <meta name="author" content="">
-        <meta name="viewport" content="initial-scale=1, maximum-scale=1, width=device-width">
-
-        <link rel="stylesheet" href="/build/normalize.css" />
-        <link rel="stylesheet" href="/build/style.css" />
-
-        <script type="application/javascript" src="/build/script.js"></script>
-
-        <!--[if lt IE 9]>
-        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
-    </head>
-
-    <body breakpoint="{0:'small', 750:'mid', 1100:''}">
-        <!-- {{appCtrl.hello}} -->
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <title ng-bind=""></title>
+    <meta content="" name="description" />
+    <meta content="" name="author" />
+    <meta content="initial-scale=1, maximum-scale=1, width=device-width" name="viewport" />
+    <link href="/build/normalize.css" rel="stylesheet" />
+    <link href="/build/style.css" rel="stylesheet" />
+    <script src="/build/script.js" type="application/javascript"></script>
+    <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  </head>
+  <body breakpoint="{0:&#39;small&#39;, 750:&#39;mid&#39;, 1100:&#39;&#39;}">
+    <div class="wrapper">
+      <ui-view></ui-view>
+    </div>
+  </body>
 </html>

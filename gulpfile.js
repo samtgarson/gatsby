@@ -35,7 +35,32 @@ gulp.task('browser-sync', function() {
 gulp.task('tpl', function () {
     gulp.src("src/**/*.html")
         .pipe($.angularTemplatecache({'standalone': true}))
+        .pipe(gulp.dest('./src/'))
+        .pipe(browserSync.reload({stream:true}));
+});
+
+// Generate slim templates
+gulp.task('slim', function () {
+    gulp.src("src/**/*.slim")
+        .pipe($.plumber({
+            errorHandler: $.notify.onError("<%= error.message %>")}))
+        .pipe($.slim({
+            pretty: true,
+            options: "attr_list_delims={'(' => ')', '[' => ']'}"
+        }))
         .pipe(gulp.dest('./src/'));
+});
+
+// Generate index slim
+gulp.task('slim_index', function () {
+    gulp.src("index.slim")
+        .pipe($.plumber({
+            errorHandler: $.notify.onError("<%= error.message %>")}))
+        .pipe($.slim({
+            pretty: true,
+            options: ":attr_list_delims={'(' => ')', '[' => ']'}"
+        }))
+        .pipe(gulp.dest('./'));
 });
 
 // Javascript build
@@ -101,9 +126,11 @@ gulp.task('sassDev', function () {
 });
 
 // Set up watchers
-gulp.task('default', ['connect', 'sassDev', 'tpl', 'jsDev', 'browser-sync'], function() {
+gulp.task('default', ['connect', 'sassDev', 'slim', 'tpl', 'jsDev', 'browser-sync'], function() {
     gulp.watch('./src/**/*.scss', ['sassDev']);
     gulp.watch('src/**/*.html', ['tpl']);
+    gulp.watch('src/**/*.slim', ['slim']);
+    gulp.watch('index.slim', ['slim_index']);
     gulp.watch(jsFiles, ['jsDev']);
 });
 

@@ -28,3 +28,18 @@ a {
 .spacer {
     margin: 3.5em auto;
 }
+
+body {
+    background-color: #eee;
+}
+
+textarea {
+    width: 100%;
+    max-width: 100%;
+    height: #{$line-height * 3};
+    max-height: #{$line-height * 3};
+    outline: none;
+    border: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
