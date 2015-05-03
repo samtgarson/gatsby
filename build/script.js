@@ -16960,14 +16960,6 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
-angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
-    return {
-        restrict: "E",
-        scope: {},
-        controller: "<%= name%>Controller as <%= name%>Ctrl",
-        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
-    };
-}).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("home", []).controller("homeController", function($scope) {
     $scope.overflowModel = "";
 }).directive("overflow", function($timeout) {
@@ -16983,25 +16975,40 @@ angular.module("home", []).controller("homeController", function($scope) {
                 var text = element.val(), scrollHeight = element[0].scrollHeight;
                 if (scrollHeight > origHeight) {
                     var len = Math.round(text.length / 3), third = text.substr(0, len);
-                    for (var i = len; i >= 0; i--) {
-                        if (text[i] == " ") {
-                            break;
+                    var newLines = third.split("\n"), over, remainder;
+                    if (newLines.length > 1) {
+                        over = newLines[0] + "\n";
+                        remainder = text.substr(newLines[0].length + 1);
+                    } else {
+                        for (var i = len; i >= 0; i--) {
+                            if (text[i] == " ") {
+                                break;
+                            }
+                        }
+                        if (i) {
+                            over = text.substr(0, i + 1);
+                            remainder = text.substr(i + 1);
                         }
                     }
-                    if (i) {
-                        var over = text.substr(0, i + 1), remainder = text.substr(i + 1);
-                        scope.overflow += over;
-                        element.val(remainder);
-                    }
+                    scope.overflow += over;
+                    element.val(remainder);
                 }
             });
         }
     };
 });
+angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
+    return {
+        restrict: "E",
+        scope: {},
+        controller: "<%= name%>Controller as <%= name%>Ctrl",
+        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
+    };
+}).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "");
-    $templateCache.put("features/home/_home.html", '<textarea autofocus="" ng-model="permanent" overflow="overflowModel" placeholder="Just write it down"></textarea>\n');
     $templateCache.put("patterns/_pattern/_pattern.html", "");
+    $templateCache.put("features/home/_home.html", '<p ng-bind="overflowModel"></p>\n<textarea autofocus="" ng-model="permanent" overflow="overflowModel" placeholder="Just write it down"></textarea>\n');
 } ]);
 angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "services", "home" ]).config(function() {}).controller("appController", function($scope) {
     var $this = this;
