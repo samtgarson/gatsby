@@ -1,2 +1,7 @@
-<p ng-bind="overflowModel"></p>
-<textarea autofocus="" ng-model="permanent" overflow="overflowModel" placeholder="Just write it down"></textarea>
+<div class="wrapper">
+  <p ng-bind="overflowModel"></p>
+  <textarea autofocus="" ng-change="updateWords()" ng-model="permanent" overflow="overflow" placeholder="Just write it down"></textarea>
+</div>
+<div class="centered caption">
+  {{words}} <ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>
+</div>

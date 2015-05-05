@@ -16961,7 +16961,15 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
 angular.module("home", []).controller("homeController", function($scope) {
-    $scope.overflowModel = "";
+    $scope.overflow = "";
+    $scope.words = 0;
+    $scope.updateWords = function(e) {
+        var text = $scope.overflow + $scope.permanent, spaces = text.split(" "), lines = [];
+        for (var i = 0; i < spaces.length; i++) {
+            lines = lines.concat(spaces[i].split("\n"));
+        }
+        $scope.words = lines.length;
+    };
 }).directive("overflow", function($timeout) {
     return {
         restrict: "A",
@@ -17007,8 +17015,8 @@ angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
 }).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "");
+    $templateCache.put("features/home/_home.html", '<div class="wrapper">\n  <p ng-bind="overflowModel"></p>\n  <textarea autofocus="" ng-change="updateWords()" ng-model="permanent" overflow="overflow" placeholder="Just write it down"></textarea>\n</div>\n<div class="centered caption">\n  {{words}} <ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n</div>\n');
     $templateCache.put("patterns/_pattern/_pattern.html", "");
-    $templateCache.put("features/home/_home.html", '<p ng-bind="overflowModel"></p>\n<textarea autofocus="" ng-model="permanent" overflow="overflowModel" placeholder="Just write it down"></textarea>\n');
 } ]);
 angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "services", "home" ]).config(function() {}).controller("appController", function($scope) {
     var $this = this;

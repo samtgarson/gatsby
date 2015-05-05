@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic);
+@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic|Maven+Pro:400);
 /* ------------------------------------------- */
 /* Mixins
 /* ------------------------------------------- */
@@ -897,12 +897,27 @@ h5, .h5 {
   line-height: calc(130% * 1.2);
   display: inline-block; }
 
-p, textarea {
+.faded {
+  opacity: 0.5; }
+
+body {
+  font-family: 'Libre Baskerville', serif;
   font-size: 16px;
-  line-height: 27px;
+  line-height: 27px; }
+
+p, textarea {
   margin: 0;
-  padding: 0;
-  font-family: 'Libre Baskerville', serif; }
+  padding: 0; }
+
+h1 {
+  font-size: 1em;
+  font-family: "Maven Pro", serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  opacity: 0.4; }
+
+.caption {
+  font-style: italic; }
 
 .wrapper {
   max-width: 600px;
@@ -910,6 +925,11 @@ p, textarea {
   margin: 0 auto;
   padding: 20px 50px 50px;
   background-color: #fff; }
+
+.centered {
+  width: 100%;
+  text-align: center;
+  margin: 2em 0; }
 
 input, textarea, button, select, a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
@@ -937,4 +957,5 @@ textarea {
   outline: none;
   border: 0;
   box-sizing: border-box;
-  overflow: hidden; }
+  overflow: hidden;
+  resize: none; }

@@ -1,6 +1,16 @@
 angular.module('home', [])
     .controller('homeController', function($scope) {
-          $scope.overflowModel = '';
+        $scope.overflow = '';
+        $scope.words = 0;
+
+        $scope.updateWords = function (e) {
+            var text = $scope.overflow + $scope.permanent,
+                spaces = text.split(' '), lines = [];
+            for (var i=0;i<spaces.length;i++) {
+                lines = lines.concat(spaces[i].split('\n'));
+            }
+            $scope.words = lines.length;
+        };
     })
     .directive('overflow',function($timeout) {
         return {
