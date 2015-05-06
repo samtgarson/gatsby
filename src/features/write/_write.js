@@ -1,8 +1,6 @@
-angular.module('stream', [])
-    .controller('streamController', function($scope, streamObj) {
+angular.module('write', [])
+    .controller('writeController', function($scope, streamObj) {
         $scope.words = 0;
-
-        streamObj.$bindTo($scope, 'stream');
 
         $scope.updateWords = function (e) {
             var text = $scope.stream.writing + $scope.stream.written,
@@ -10,8 +8,10 @@ angular.module('stream', [])
             for (var i=0;i<spaces.length;i++) {
                 lines = lines.concat(spaces[i].split('\n'));
             }
-            $scope.words = lines.length;
+            $scope.words = lines.length==1&&lines[0]==''?0:lines.length;
         };
+
+        streamObj.$bindTo($scope, 'stream').then(function() {$scope.updateWords();});
     })
     .directive('overflow',function($timeout) {
         return {

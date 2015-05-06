@@ -1,6 +1,6 @@
 angular.module('login', [])
     .controller('loginController', function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
-        if (currentAuth) $state.go('home');
+        if (currentAuth) $state.go('write');
         
         $scope.login = function() {
             $scope.authData = null;
@@ -13,11 +13,12 @@ angular.module('login', [])
                     if (data.$value === null) {
                         user.name = authData.twitter.displayName;
                         user.handle= authData.twitter.username;
+                        user.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, '_bigger.');
                         user.$save().then(function() {
-                            $state.go('home');    
+                            $state.go('write');    
                         });
                     } else {
-                        $state.go('home');
+                        $state.go('write');
                     }
                 });
             }).catch(function(error) {

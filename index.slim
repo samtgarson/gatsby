@@ -25,7 +25,9 @@ html lang="en" ng-app="app" ng-controller="appController"
                 h1.nav__item {{title}}
                 .nav__item ng-if="!!name"
                     / a.left {{name}}
-                    a.left ui-sref="home" home
+                    a.left href="/" Write
+                    a.right.avatar href="/me"
+                        img ng-src="{{avatar}}"
                     a.right ng-click="logout()" Logout
         ui-view
     

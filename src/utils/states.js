@@ -42,17 +42,6 @@ angular.module('states', [])
         }
 
         $stateProvider
-            .state('home', {
-                'url'         : '/',
-                'templateUrl' : templater('home'),
-                'controller'  : 'homeController',
-                'title'       : "Joyce",
-                'resolve'     : {
-                    "currentAuth" : ["Auth", function(Auth) {
-                        return Auth.$requireAuth();
-                    }]
-                }
-            })
             .state('login', {
                 'url'         : '/login',
                 'templateUrl' : templater('login'),
@@ -63,18 +52,38 @@ angular.module('states', [])
                     }]
                 }
             })
-            .state('stream', {
-                'url'         : '/stream/:id',
-                'templateUrl' : templater('stream'),
-                'controller'  : 'streamController',
+            .state('write', {
+                'url'         : '/',
+                'templateUrl' : templater('write'),
+                'controller'  : 'writeController',
                 'title'       : "New Stream",
                 'resolve'     : {
-                    "currentAuth" : ["Auth", function(Auth) {
-                        return Auth.$requireAuth();
-                    }],
-                    "streamObj"  : ["Stream", "$stateParams", function (Stream, $stateParams) {
-                        return Stream.get($stateParams.id);
+                    "streamObj"  : ["Stream", "User", "$q", "Auth", function (Stream, User, $q, Auth) {
+                        var deferred = $q.defer();
+                        $q.all({'authData': Auth.$requireAuth(), 'userData': User.$loaded()})
+                        .then(function(data) {
+                            if (data.userData.latest) deferred.resolve(Stream.get(data.userData.latest));
+                            else {
+                                Stream.get(Stream.new()).then(function(newStream) {
+                                    User.latest = newStream.$id;
+                                    User.$save().then(function(){
+                                        deferred.resolve(newStream);
+                                    });
+                                });
+                                
+                            }
+                        }).catch(function(err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
                     }]
                 }
+            })
+            .state('logout', {
+                'url'         : '/logout',
+                'controller'  : ['Auth', '$state', function(Auth, $state) {
+                    Auth.$unauth();
+                    $state.go('login');
+                }]
             });
     });

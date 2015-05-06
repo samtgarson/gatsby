@@ -24204,13 +24204,23 @@ if (typeof Object.getPrototypeOf !== "function") {
 angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com").factory("Auth", function($firebaseAuth) {
     var ref = new Firebase("https://joyce.firebaseio.com");
     return $firebaseAuth(ref);
-}).service("Stream", function($firebaseObject, Endpoint, Auth, $q) {
+}).factory("User", function($firebaseObject, Endpoint, Auth) {
+    var authData = Auth.$getAuth();
+    if (authData) {
+        var ref = new Firebase(Endpoint + "/users/" + authData.uid);
+        return $firebaseObject(ref);
+    } else return false;
+}).service("Stream", function($firebaseObject, Endpoint, User, $q) {
     var service = {};
     service.new = function() {
-        var deferred = $q.defer(), streamsRef = new Firebase(Endpoint + "/streams"), streamRef = streamsRef.push(), user = Auth.$getAuth(), date = new Date().getTime(), userRef = new Firebase(Endpoint + "/users/" + user.uid + "/streams/" + streamRef.key());
-        userRef.set(true);
+        var deferred = $q.defer(), streamsRef = new Firebase(Endpoint + "/streams"), streamRef = streamsRef.push(), date = new Date().getTime();
+        User.$loaded().then(function() {
+            if (!User.streams) User.streams = {};
+            User.streams[streamRef.key()] = true;
+            User.$save();
+        });
         streamRef.set({
-            owner: user.uid,
+            owner: User.$id,
             frozen: false,
             created: date,
             written: "",
@@ -24253,17 +24263,7 @@ angular.module("states", []).run(function($rootScope, $state) {
         if (angular.isUndefined(child)) child = page;
         return "src/features/" + page + "/_" + child + ".html";
     }
-    $stateProvider.state("home", {
-        url: "/",
-        templateUrl: templater("home"),
-        controller: "homeController",
-        title: "Joyce",
-        resolve: {
-            currentAuth: [ "Auth", function(Auth) {
-                return Auth.$requireAuth();
-            } ]
-        }
-    }).state("login", {
+    $stateProvider.state("login", {
         url: "/login",
         templateUrl: templater("login"),
         controller: "loginController",
@@ -24272,19 +24272,38 @@ angular.module("states", []).run(function($rootScope, $state) {
                 return Auth.$waitForAuth();
             } ]
         }
-    }).state("stream", {
-        url: "/stream/:id",
-        templateUrl: templater("stream"),
-        controller: "streamController",
+    }).state("write", {
+        url: "/",
+        templateUrl: templater("write"),
+        controller: "writeController",
         title: "New Stream",
         resolve: {
-            currentAuth: [ "Auth", function(Auth) {
-                return Auth.$requireAuth();
-            } ],
-            streamObj: [ "Stream", "$stateParams", function(Stream, $stateParams) {
-                return Stream.get($stateParams.id);
+            streamObj: [ "Stream", "User", "$q", "Auth", function(Stream, User, $q, Auth) {
+                var deferred = $q.defer();
+                $q.all({
+                    authData: Auth.$requireAuth(),
+                    userData: User.$loaded()
+                }).then(function(data) {
+                    if (data.userData.latest) deferred.resolve(Stream.get(data.userData.latest)); else {
+                        Stream.get(Stream.new()).then(function(newStream) {
+                            User.latest = newStream.$id;
+                            User.$save().then(function() {
+                                deferred.resolve(newStream);
+                            });
+                        });
+                    }
+                }).catch(function(err) {
+                    deferred.reject(err);
+                });
+                return deferred.promise;
             } ]
         }
+    }).state("logout", {
+        url: "/logout",
+        controller: [ "Auth", "$state", function(Auth, $state) {
+            Auth.$unauth();
+            $state.go("login");
+        } ]
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
@@ -24295,39 +24314,18 @@ angular.module("home", []).controller("homeController", function($scope, $state,
         });
     };
 });
-angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
-    if (currentAuth) $state.go("home");
-    $scope.login = function() {
-        $scope.authData = null;
-        $scope.error = null;
-        Auth.$authWithOAuthPopup("twitter").then(function(authData) {
-            var ref = new Firebase(Endpoint + "/users/" + authData.uid), user = $firebaseObject(ref);
-            user.$loaded(function(data) {
-                if (data.$value === null) {
-                    user.name = authData.twitter.displayName;
-                    user.handle = authData.twitter.username;
-                    user.$save().then(function() {
-                        $state.go("home");
-                    });
-                } else {
-                    $state.go("home");
-                }
-            });
-        }).catch(function(error) {
-            $scope.error = error;
-        });
-    };
-});
-angular.module("stream", []).controller("streamController", function($scope, streamObj) {
+angular.module("write", []).controller("writeController", function($scope, streamObj) {
     $scope.words = 0;
-    streamObj.$bindTo($scope, "stream");
     $scope.updateWords = function(e) {
         var text = $scope.stream.writing + $scope.stream.written, spaces = text.split(" "), lines = [];
         for (var i = 0; i < spaces.length; i++) {
             lines = lines.concat(spaces[i].split("\n"));
         }
-        $scope.words = lines.length;
+        $scope.words = lines.length == 1 && lines[0] == "" ? 0 : lines.length;
     };
+    streamObj.$bindTo($scope, "stream").then(function() {
+        $scope.updateWords();
+    });
 }).directive("overflow", function($timeout) {
     return {
         restrict: "A",
@@ -24363,6 +24361,30 @@ angular.module("stream", []).controller("streamController", function($scope, str
         }
     };
 });
+angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
+    if (currentAuth) $state.go("write");
+    $scope.login = function() {
+        $scope.authData = null;
+        $scope.error = null;
+        Auth.$authWithOAuthPopup("twitter").then(function(authData) {
+            var ref = new Firebase(Endpoint + "/users/" + authData.uid), user = $firebaseObject(ref);
+            user.$loaded(function(data) {
+                if (data.$value === null) {
+                    user.name = authData.twitter.displayName;
+                    user.handle = authData.twitter.username;
+                    user.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, "_bigger.");
+                    user.$save().then(function() {
+                        $state.go("write");
+                    });
+                } else {
+                    $state.go("write");
+                }
+            });
+        }).catch(function(error) {
+            $scope.error = error;
+        });
+    };
+});
 angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
     return {
         restrict: "E",
@@ -24375,14 +24397,17 @@ angular.module("templates", []).run([ "$templateCache", function($templateCache)
     $templateCache.put("features/_feature/_feature.html", "\n");
     $templateCache.put("features/home/_home.html", '<div class="wrapper">\n  <a ng-click="newStream()">New Stream</a>\n</div>\n');
     $templateCache.put("features/login/_login.html", '<div class="wrapper">\n  <a ng-click="login()">login</a>\n  <p>\n    {{error}}\n  </p>\n  <p>\n    {{authData.twitter.username}}\n  </p>\n</div>\n');
-    $templateCache.put("features/stream/_stream.html", '<div class="wrapper">\n  <textarea autofocus="" ng-change="updateWords()" ng-model="stream.writing" overflow="stream.written" placeholder="Just write it down"></textarea>\n</div>\n<div class="centered caption">\n  {{words}} <ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n</div>\n');
+    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <textarea autofocus="" ng-change="updateWords()" ng-model="stream.writing" overflow="stream.written" placeholder="Just write it down"></textarea>\n</div>\n<div class="centered caption">\n  {{words}} <ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n</div>\n');
     $templateCache.put("patterns/_pattern/_pattern.html", "");
 } ]);
-angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "services", "firebase", "home", "stream", "login" ]).config(function() {}).controller("appController", function($scope, Auth, $state) {
+angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "services", "firebase", "home", "write", "login" ]).controller("appController", function($scope, Auth, User, $state) {
     $scope.title = "Joyce";
-    Auth.$onAuth(function(authData) {
-        $scope.name = authData ? authData.twitter.displayName : false;
-    });
+    if (User.$loaded) {
+        User.$loaded(function(user) {
+            $scope.name = user.name ? user.name : false;
+            $scope.avatar = user.avatar ? user.avatar : false;
+        });
+    }
     $scope.$on("$stateChangeSuccess", function(e, toState) {
         $scope.title = toState.title ? toState.title : "Joyce";
     });

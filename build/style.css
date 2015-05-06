@@ -937,7 +937,7 @@ nav {
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
-  padding: 30px 0;
+  padding: 30px 0 20px;
   overflow: hidden; }
   nav.slide:hover .nav__slider {
     -webkit-transform: translateX(-50%);
@@ -964,6 +964,18 @@ nav {
         float: left; }
       nav .nav__slider .nav__item .right {
         float: right; }
+      nav .nav__slider .nav__item .avatar {
+        opacity: 1; }
+        nav .nav__slider .nav__item .avatar:hover img {
+          opacity: 1;
+          transition: opacity 0.2s; }
+        nav .nav__slider .nav__item .avatar img {
+          border-radius: 50px;
+          height: 2.6em;
+          opacity: 0.8;
+          margin-left: 1.5em;
+          vertical-align: middle;
+          margin-top: -0.6em; }
 
 .centered {
   width: 100%;

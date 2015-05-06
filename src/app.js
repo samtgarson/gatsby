@@ -13,21 +13,19 @@ angular.module('app', [
 
     // Features
     'home',
-    'stream',
+    'write',
     'login'
     
     // Patterns
 ])
-
-    .config(function() {
-
-    })
-
-    .controller('appController', function ($scope, Auth, $state) {
+    .controller('appController', function ($scope, Auth, User, $state) {
         $scope.title = "Joyce";
-        Auth.$onAuth(function(authData) {
-            $scope.name = authData?authData.twitter.displayName:false;
-        });
+        if (User.$loaded) {
+            User.$loaded(function (user) {
+                $scope.name = user.name?user.name:false;
+                $scope.avatar = user.avatar?user.avatar:false;
+            });
+        }
 
         $scope.$on('$stateChangeSuccess', function(e, toState) {
             $scope.title = toState.title?toState.title:'Joyce';
@@ -36,7 +34,7 @@ angular.module('app', [
         $scope.logout = function () {
             Auth.$unauth();
             $state.go('login');
-        }
+        };
         
         
     });

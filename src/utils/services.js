@@ -5,20 +5,30 @@ angular.module('services', [])
             return $firebaseAuth(ref);
         }
     )
-    .service('Stream', function($firebaseObject, Endpoint, Auth, $q) {
+    .factory('User', function ($firebaseObject, Endpoint, Auth) {
+        var authData = Auth.$getAuth();
+        if (authData) {
+            var ref = new Firebase(Endpoint + '/users/' + authData.uid);
+            return $firebaseObject(ref);
+        } else return false;
+    })
+    .service('Stream', function($firebaseObject, Endpoint, User, $q) {
         var service = {};
 
         service.new  = function () {
             var deferred = $q.defer(),
                 streamsRef = new Firebase(Endpoint + '/streams'),
                 streamRef = streamsRef.push(),
-                user = Auth.$getAuth(),
-                date = new Date().getTime(),
-                userRef = new Firebase(Endpoint + '/users/' + user.uid + '/streams/' + streamRef.key());
+                date = new Date().getTime();
 
-            userRef.set(true);
+            User.$loaded().then(function(){
+                if (!User.streams) User.streams = {};
+                User.streams[streamRef.key()] = true;
+                User.$save();
+            });
+            
             streamRef.set({
-                'owner': user.uid,
+                'owner': User.$id,
                 'frozen': false,
                 'created': date,
                 'written': '',
