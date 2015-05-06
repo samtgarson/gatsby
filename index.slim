@@ -1,6 +1,6 @@
 <!doctype html>
 
-html lang="en" ng-app="app" ng-controller="appController as appCtrl"
+html lang="en" ng-app="app" ng-controller="appController"
     head
         meta charset="utf-8"
 
@@ -14,13 +14,18 @@ html lang="en" ng-app="app" ng-controller="appController as appCtrl"
         link rel="stylesheet" href="/build/normalize.css"
         link rel="stylesheet" href="/build/style.css"
 
-        script type="application/javascript" src="/build/script.js"
+        script type="application/javascript" src="/build/script.js" /
 
-        <!--[if lt IE 9]>
-        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+        /[if lt IE 9]
+            script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" /
 
     body breakpoint="{0:'small', 750:'mid', 1100:''}"
-        h1.centered New Stream
+        nav ng-class="{'slide': !!name}"
+            .nav__slider
+                h1.nav__item {{title}}
+                .nav__item ng-if="!!name"
+                    / a.left {{name}}
+                    a.left ui-sref="home" home
+                    a.right ng-click="logout()" Logout
         ui-view
     

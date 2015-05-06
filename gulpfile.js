@@ -35,8 +35,7 @@ gulp.task('browser-sync', function() {
 gulp.task('tpl', function () {
     gulp.src("src/**/*.html")
         .pipe($.angularTemplatecache({'standalone': true}))
-        .pipe(gulp.dest('./src/'))
-        .pipe(browserSync.reload({stream:true}));
+        .pipe(gulp.dest('./src/'));
 });
 
 // Generate slim templates

@@ -1,6 +1,3 @@
 .wrapper
-    p ng-bind="overflowModel"
-    textarea ng-model="permanent" overflow="overflow" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
-div.centered.caption
-    | {{words}} 
-    ng-pluralize.faded count="words" when="{'one': 'word', 'other': 'words'}"
+    a ng-click="newStream()" New Stream
+    

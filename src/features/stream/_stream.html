@@ -1,0 +1,6 @@
+<div class="wrapper">
+  <textarea autofocus="" ng-change="updateWords()" ng-model="stream.writing" overflow="stream.written" placeholder="Just write it down"></textarea>
+</div>
+<div class="centered caption">
+  {{words}} <ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>
+</div>

@@ -1,0 +1,5 @@
+.wrapper
+    textarea ng-model="stream.writing" overflow="stream.written" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
+div.centered.caption
+    | {{words}} 
+    ng-pluralize.faded count="words" when="{'one': 'word', 'other': 'words'}"

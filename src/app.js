@@ -9,9 +9,12 @@ angular.module('app', [
     'states',
 //    'facebook',
     'services',
+    'firebase',
 
     // Features
-    'home'
+    'home',
+    'stream',
+    'login'
     
     // Patterns
 ])
@@ -20,9 +23,20 @@ angular.module('app', [
 
     })
 
-    .controller('appController', function ($scope) {
-        var $this = this;
-        this.hello = 'hello world';
+    .controller('appController', function ($scope, Auth, $state) {
+        $scope.title = "Joyce";
+        Auth.$onAuth(function(authData) {
+            $scope.name = authData?authData.twitter.displayName:false;
+        });
+
+        $scope.$on('$stateChangeSuccess', function(e, toState) {
+            $scope.title = toState.title?toState.title:'Joyce';
+        });
+
+        $scope.logout = function () {
+            Auth.$unauth();
+            $state.go('login');
+        }
         
         
     });

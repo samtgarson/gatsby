@@ -1,7 +1,6 @@
 .DS_Store
 ._*
-*.sublime-project
-*.sublime-workspace
+*.sublime-*
 node_modules
 .sass-cache
 .htaccess

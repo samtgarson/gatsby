@@ -1,3 +1,5 @@
-angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("features/_feature/_feature.html","");
-$templateCache.put("features/home/_home.html","<div class=\"wrapper\">\n  <p ng-bind=\"overflowModel\"></p>\n  <textarea autofocus=\"\" ng-change=\"updateWords()\" ng-model=\"permanent\" overflow=\"overflow\" placeholder=\"Just write it down\"></textarea>\n</div>\n<div class=\"centered caption\">\n  {{words}} <ng-pluralize class=\"faded\" count=\"words\" when=\"{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}\"></ng-pluralize>\n</div>\n");
+angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("features/_feature/_feature.html","\n");
+$templateCache.put("features/home/_home.html","<div class=\"wrapper\">\n  <a ng-click=\"newStream()\">New Stream</a>\n</div>\n");
+$templateCache.put("features/login/_login.html","<div class=\"wrapper\">\n  <a ng-click=\"login()\">login</a>\n  <p>\n    {{error}}\n  </p>\n  <p>\n    {{authData.twitter.username}}\n  </p>\n</div>\n");
+$templateCache.put("features/stream/_stream.html","<div class=\"wrapper\">\n  <textarea autofocus=\"\" ng-change=\"updateWords()\" ng-model=\"stream.writing\" overflow=\"stream.written\" placeholder=\"Just write it down\"></textarea>\n</div>\n<div class=\"centered caption\">\n  {{words}} <ng-pluralize class=\"faded\" count=\"words\" when=\"{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}\"></ng-pluralize>\n</div>\n");
 $templateCache.put("patterns/_pattern/_pattern.html","");}]);
