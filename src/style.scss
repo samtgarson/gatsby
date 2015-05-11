@@ -17,10 +17,13 @@ a {
     cursor: pointer;
 }
 
+.left {
+    float: left;
+}
+
 .right {
     float: right;
 }
-
 .center {
     text-align: center;
 }
@@ -43,4 +46,22 @@ textarea {
     box-sizing: border-box;
     overflow: hidden;
      resize: none;
+}
+
+.button {
+    font-size: 1.2em;
+    margin: 1em 4em 0;
+    text-decoration: underline;
+    display: inline-block;
+    opacity: .6;
+    transition: opacity .4s;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &.disabled {
+        opacity: .2;
+        pointer-events: none;
+    }
 }

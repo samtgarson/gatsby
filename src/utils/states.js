@@ -5,7 +5,7 @@ angular.module('states', [])
     .run (function($rootScope, $state) {
         $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
             if (error == 'AUTH_REQUIRED') {
-                $state.go(home);
+                $state.go('login');
             }
         });
     })
@@ -52,30 +52,33 @@ angular.module('states', [])
                     }]
                 }
             })
-            .state('write', {
+            .state('home', {
                 'url'         : '/',
+                'templateUrl' : templater('home'),
+                'controller'  : 'homeController',
+                'resolve'     : {
+                    "currentAuth"  : ["Auth", function (Auth) {
+                        return Auth.$requireAuth();
+                    }]
+                }
+            })
+            .state('write', {
+                'url'         : '/write',
                 'templateUrl' : templater('write'),
                 'controller'  : 'writeController',
-                'title'       : "New Stream",
                 'resolve'     : {
-                    "streamObj"  : ["Stream", "User", "$q", "Auth", function (Stream, User, $q, Auth) {
-                        var deferred = $q.defer();
-                        $q.all({'authData': Auth.$requireAuth(), 'userData': User.$loaded()})
-                        .then(function(data) {
-                            if (data.userData.latest) deferred.resolve(Stream.get(data.userData.latest));
-                            else {
-                                Stream.get(Stream.new()).then(function(newStream) {
-                                    User.latest = newStream.$id;
-                                    User.$save().then(function(){
-                                        deferred.resolve(newStream);
-                                    });
-                                });
-                                
-                            }
-                        }).catch(function(err) {
-                            deferred.reject(err);
-                        });
-                        return deferred.promise;
+                    "currentAuth"  : ["Auth", function (Auth) {
+                        return Auth.$requireAuth();
+                    }]
+                }
+            })
+            .state('stream', {
+                'url'         : '/stream/:id',
+                'templateUrl' : templater('stream'),
+                'controller'  : 'streamController',
+                'resolve'     : {
+                    "currentAuth"  : ["Auth", function (Auth) {
+                        return Auth.$requireAuth();
                     }]
                 }
             })

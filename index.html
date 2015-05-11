@@ -9,19 +9,19 @@
     <meta content="initial-scale=1, maximum-scale=1, width=device-width" name="viewport" />
     <link href="/build/normalize.css" rel="stylesheet" />
     <link href="/build/style.css" rel="stylesheet" />
-    <script src="/build/script.js" type="application/javascript" />
+    <script src="/build/script.js" type="application/javascript"></script>
     <!--[if lt IE 9]>
-    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" />
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
   </head>
-  <body breakpoint="{0:&#39;small&#39;, 750:&#39;mid&#39;, 1100:&#39;&#39;}">
+  <body>
     <nav ng-class="{&#39;slide&#39;: !!name}">
       <div class="nav__slider">
         <h1 class="nav__item">
-          {{title}}
+          Joyce
         </h1>
         <div class="nav__item" ng-if="!!name">
-          <a class="left" href="/">Write</a><a class="right avatar" href="/me"><img ng-src="{{avatar}}" /></a><a class="right" ng-click="logout()">Logout</a>
+          <a class="left" href="/logout">Logout</a><a class="left avatar" href="/me"><img ng-src="{{avatar}}" /></a>
         </div>
       </div>
     </nav>

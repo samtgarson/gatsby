@@ -1,17 +1,15 @@
 angular.module('services', [])
     .value('Endpoint', 'https://joyce.firebaseio.com')
     .factory("Auth", function($firebaseAuth) {
-            var ref = new Firebase("https://joyce.firebaseio.com");
-            return $firebaseAuth(ref);
-        }
-    )
-    .factory('User', function ($firebaseObject, Endpoint, Auth) {
-        var authData = Auth.$getAuth();
-        if (authData) {
-            var ref = new Firebase(Endpoint + '/users/' + authData.uid);
-            return $firebaseObject(ref);
-        } else return false;
+        var ref = new Firebase("https://joyce.firebaseio.com");
+        return $firebaseAuth(ref);
     })
+
+    .factory("User", function($firebaseObject, Auth) {
+        var ref = new Firebase("https://joyce.firebaseio.com/users/" + Auth.$getAuth().uid);
+        return $firebaseObject(ref);
+    })
+
     .service('Stream', function($firebaseObject, Endpoint, User, $q) {
         var service = {};
 
@@ -21,11 +19,9 @@ angular.module('services', [])
                 streamRef = streamsRef.push(),
                 date = new Date().getTime();
 
-            User.$loaded().then(function(){
-                if (!User.streams) User.streams = {};
-                User.streams[streamRef.key()] = true;
-                User.$save();
-            });
+            if (!User.streams) User.streams = {};
+            User.streams[streamRef.key()] = false;
+            User.$save();
             
             streamRef.set({
                 'owner': User.$id,
@@ -41,7 +37,28 @@ angular.module('services', [])
 
         service.get = function(uid) {
             ref = new Firebase(Endpoint + '/streams/' + uid);
-            return $firebaseObject(ref).$loaded();
+            return $firebaseObject(ref);
+        };
+
+        service.getLatest = function() {
+            var deferred = $q.defer();
+            User.$loaded().then(function() {
+                if (User.latest) deferred.resolve(service.get(User.latest));
+                else {
+                    var id = service.new();
+                    User.latest = id;
+                    $q.all([User.$save(), service.get(id)]).then(function(proms) {
+                        deferred.resolve(proms[1]);
+                    });
+                }
+            });
+            return deferred.promise;
+        };
+
+        service.abandon = function (streamObj) {
+            delete User.streams[User.latest];
+            delete User.latest;
+            return $q.all([streamObj.$remove(), User.$save()]);
         };
 
         return service;

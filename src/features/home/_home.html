@@ -1,3 +1,8 @@
-<div class="wrapper">
-  <a ng-click="newStream()">New Stream</a>
+<div class="wrapper center">
+  <a class="button" ui-sref="write">{{user.latest?'Continue writing':'Start writing'}}</a>
+  <ul>
+    <li ng-if="!!date" ng-repeat="(id, date) in user.streams">
+      {{date}}
+    </li>
+  </ul>
 </div>

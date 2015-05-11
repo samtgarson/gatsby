@@ -14,20 +14,18 @@ html lang="en" ng-app="app" ng-controller="appController"
         link rel="stylesheet" href="/build/normalize.css"
         link rel="stylesheet" href="/build/style.css"
 
-        script type="application/javascript" src="/build/script.js" /
+        script type="application/javascript" src="/build/script.js"
 
         /[if lt IE 9]
-            script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" /
+            script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"
 
-    body breakpoint="{0:'small', 750:'mid', 1100:''}"
+    body
         nav ng-class="{'slide': !!name}"
             .nav__slider
-                h1.nav__item {{title}}
+                h1.nav__item Joyce
                 .nav__item ng-if="!!name"
-                    / a.left {{name}}
-                    a.left href="/" Write
-                    a.right.avatar href="/me"
+                    a.left href="/logout" Logout
+                    a.left.avatar href="/me"
                         img ng-src="{{avatar}}"
-                    a.right ng-click="logout()" Logout
         ui-view
     

@@ -1,5 +1,11 @@
-.wrapper
-    textarea ng-model="stream.writing" overflow="stream.written" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
-div.centered.caption
-    | {{words}} 
-    ng-pluralize.faded count="words" when="{'one': 'word', 'other': 'words'}"
+h2 ng-if="!stream" Loading...
+.wrapper ng-show="stream"
+    textarea ng-model="stream.writing" ng-focus="abandon_confirm=false" overflow="stream.written" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
+    .stream-actions.center ng-init="abandon_confirm=false"
+        a.button#abandon ng-click="abandon()" {{abandon_confirm?'Sure?':'Abandon'}}
+        a.button ng-class="{'disabled': !words}" Complete
+div.caption.wrapper.wrapper--dark ng-show="stream"
+    .left
+        span {{words}} 
+        ng-pluralize.faded count="words" when="{'one': 'word', 'other': 'words'}"
+    span.faded.right  {{created | amCalendar}}

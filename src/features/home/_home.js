@@ -1,8 +1,5 @@
 angular.module('home', [])
-    .controller('homeController', function($scope, $state, Stream) {
-        $scope.newStream = function () {
-            $state.go('stream', {id: Stream.new()});
-        };
-
-
+    .controller('homeController', function($scope, User) {
+        User.$bindTo($scope, 'user');
+        
     });

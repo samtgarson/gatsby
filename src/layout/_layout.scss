@@ -2,8 +2,13 @@
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
-    padding: 20px 50px 50px;
+    padding: 50px 50px;
     background-color: #fff;
+
+    &.wrapper--dark {
+        background-color: transparent;
+        padding-top: 20px;
+    }
 }
 
 nav {
@@ -12,34 +17,31 @@ nav {
     margin: 0 auto;
     padding: 30px 0 20px;;
     overflow: hidden;
+    position: relative;
+    height: 30px;
 
     &.slide:hover .nav__slider {
-        transform: translateX(-50%);
+        transform: translateY(-50%);
     }
 
     .nav__slider {
-        width: 200%;
-        height: 100%;
+        width: 100%;
+        height: 200%;
         transition: transform .3s ease-in-out;
+        position: absolute;
 
         .nav__item {
-            width: 50%;
-            display: inline-block;
+            width: 100%;
+            height: 50%;
+            display: block;
             text-align: center;
             float: left;
             margin: 0;
 
             a {
-                @include alt-font;
+                font-style: italic;
                 line-height: 1.2em;
                 text-decoration: none;
-            }
-
-            .left {
-                float: left;
-            }
-            .right {
-                float: right;
             }
 
             .avatar {
@@ -60,9 +62,6 @@ nav {
         }
     }
 }
-
-.centered {
-    width: 100%;
-    text-align: center;
-    margin: 2em 0;
+.stream-actions {
+    margin-top: 2em;
 }

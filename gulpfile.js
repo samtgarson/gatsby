@@ -23,7 +23,6 @@ gulp.task('connect', function() {
 gulp.task('browser-sync', function() {
     return browserSync({
       proxy: 'localhost:8080',
-      open: false,
       minify: false,
       files: ['*.html', 'build/script.js'],
       injectChanges: true
@@ -32,7 +31,7 @@ gulp.task('browser-sync', function() {
 
 
 // Generate angular templates
-gulp.task('tpl', function () {
+gulp.task('tpl', ['slim'], function () {
     gulp.src("src/**/*.html")
         .pipe($.angularTemplatecache({'standalone': true}))
         .pipe(gulp.dest('./src/'));
@@ -125,10 +124,10 @@ gulp.task('sassDev', function () {
 });
 
 // Set up watchers
-gulp.task('default', ['connect', 'sassDev', 'slim', 'tpl', 'jsDev', 'browser-sync'], function() {
+gulp.task('default', ['connect', 'sassDev', 'tpl', 'jsDev', 'browser-sync'], function() {
     gulp.watch('./src/**/*.scss', ['sassDev']);
-    gulp.watch('src/**/*.html', ['tpl']);
-    gulp.watch('src/**/*.slim', ['slim']);
+    gulp.watch('src/**/*.slim', ['tpl']);
+    // gulp.watch('src/**/*.slim', ['slim']);
     gulp.watch('index.slim', ['slim_index']);
     gulp.watch(jsFiles, ['jsDev']);
 });
