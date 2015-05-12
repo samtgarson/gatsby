@@ -7,7 +7,7 @@ angular.module('app', [
     'ngAnimate',
     'ngSanitize',
     'states',
-//    'facebook',
+    'anim-in-out',
     'services',
     'firebase',
     'angularMoment',

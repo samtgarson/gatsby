@@ -9681,9 +9681,6 @@
         var noop = angular.noop;
         var forEach = angular.forEach;
         var selectors = $animateProvider.$$selectors;
-        var isArray = angular.isArray;
-        var isString = angular.isString;
-        var isObject = angular.isObject;
         var ELEMENT_NODE = 1;
         var NG_ANIMATE_STATE = "$$ngAnimateState";
         var NG_ANIMATE_CHILDREN = "$$ngAnimateChildren";
@@ -9708,84 +9705,24 @@
         function isMatchingElement(elm1, elm2) {
             return extractElementNode(elm1) == extractElementNode(elm2);
         }
-        var $$jqLite;
-        $provide.decorator("$animate", [ "$delegate", "$$q", "$injector", "$sniffer", "$rootElement", "$$asyncCallback", "$rootScope", "$document", "$templateRequest", "$$jqLite", function($delegate, $$q, $injector, $sniffer, $rootElement, $$asyncCallback, $rootScope, $document, $templateRequest, $$$jqLite) {
-            $$jqLite = $$$jqLite;
+        $provide.decorator("$animate", [ "$delegate", "$injector", "$sniffer", "$rootElement", "$$asyncCallback", "$rootScope", "$document", function($delegate, $injector, $sniffer, $rootElement, $$asyncCallback, $rootScope, $document) {
+            var globalAnimationCounter = 0;
             $rootElement.data(NG_ANIMATE_STATE, rootAnimateState);
-            var deregisterWatch = $rootScope.$watch(function() {
-                return $templateRequest.totalPendingRequests;
-            }, function(val, oldVal) {
-                if (val !== 0) return;
-                deregisterWatch();
+            $rootScope.$$postDigest(function() {
                 $rootScope.$$postDigest(function() {
-                    $rootScope.$$postDigest(function() {
-                        rootAnimateState.running = false;
-                    });
+                    rootAnimateState.running = false;
                 });
             });
-            var globalAnimationCounter = 0;
             var classNameFilter = $animateProvider.classNameFilter();
             var isAnimatableClassName = !classNameFilter ? function() {
                 return true;
             } : function(className) {
                 return classNameFilter.test(className);
             };
-            function classBasedAnimationsBlocked(element, setter) {
+            function blockElementAnimations(element) {
                 var data = element.data(NG_ANIMATE_STATE) || {};
-                if (setter) {
-                    data.running = true;
-                    data.structural = true;
-                    element.data(NG_ANIMATE_STATE, data);
-                }
-                return data.disabled || data.running && data.structural;
-            }
-            function runAnimationPostDigest(fn) {
-                var cancelFn, defer = $$q.defer();
-                defer.promise.$$cancelFn = function() {
-                    cancelFn && cancelFn();
-                };
-                $rootScope.$$postDigest(function() {
-                    cancelFn = fn(function() {
-                        defer.resolve();
-                    });
-                });
-                return defer.promise;
-            }
-            function parseAnimateOptions(options) {
-                if (isObject(options)) {
-                    if (options.tempClasses && isString(options.tempClasses)) {
-                        options.tempClasses = options.tempClasses.split(/\s+/);
-                    }
-                    return options;
-                }
-            }
-            function resolveElementClasses(element, cache, runningAnimations) {
-                runningAnimations = runningAnimations || {};
-                var lookup = {};
-                forEach(runningAnimations, function(data, selector) {
-                    forEach(selector.split(" "), function(s) {
-                        lookup[s] = data;
-                    });
-                });
-                var hasClasses = Object.create(null);
-                forEach((element.attr("class") || "").split(/\s+/), function(className) {
-                    hasClasses[className] = true;
-                });
-                var toAdd = [], toRemove = [];
-                forEach(cache && cache.classes || [], function(status, className) {
-                    var hasClass = hasClasses[className];
-                    var matchingAnimation = lookup[className] || {};
-                    if (status === false) {
-                        if (hasClass || matchingAnimation.event == "addClass") {
-                            toRemove.push(className);
-                        }
-                    } else if (status === true) {
-                        if (!hasClass || matchingAnimation.event == "removeClass") {
-                            toAdd.push(className);
-                        }
-                    }
-                });
-                return toAdd.length + toRemove.length > 0 && [ toAdd.join(" "), toRemove.join(" ") ];
+                data.running = true;
+                element.data(NG_ANIMATE_STATE, data);
             }
             function lookup(name) {
                 if (name) {
@@ -9803,32 +9740,19 @@
                     return matches;
                 }
             }
-            function animationRunner(element, animationEvent, className, options) {
+            function animationRunner(element, animationEvent, className) {
                 var node = element[0];
                 if (!node) {
                     return;
                 }
-                if (options) {
-                    options.to = options.to || {};
-                    options.from = options.from || {};
-                }
-                var classNameAdd;
-                var classNameRemove;
-                if (isArray(className)) {
+                var isSetClassOperation = animationEvent == "setClass";
+                var isClassBased = isSetClassOperation || animationEvent == "addClass" || animationEvent == "removeClass";
+                var classNameAdd, classNameRemove;
+                if (angular.isArray(className)) {
                     classNameAdd = className[0];
                     classNameRemove = className[1];
-                    if (!classNameAdd) {
-                        className = classNameRemove;
-                        animationEvent = "removeClass";
-                    } else if (!classNameRemove) {
-                        className = classNameAdd;
-                        animationEvent = "addClass";
-                    } else {
-                        className = classNameAdd + " " + classNameRemove;
-                    }
+                    className = classNameAdd + " " + classNameRemove;
                 }
-                var isSetClassOperation = animationEvent == "setClass";
-                var isClassBased = isSetClassOperation || animationEvent == "addClass" || animationEvent == "removeClass" || animationEvent == "animate";
                 var currentClassName = element.attr("class");
                 var classes = currentClassName + " " + className;
                 if (!isAnimatableClassName(classes)) {
@@ -9882,23 +9806,19 @@
                         };
                         switch (animation.event) {
                           case "setClass":
-                            cancellations.push(animation.fn(element, classNameAdd, classNameRemove, progress, options));
-                            break;
-
-                          case "animate":
-                            cancellations.push(animation.fn(element, className, options.from, options.to, progress));
+                            cancellations.push(animation.fn(element, classNameAdd, classNameRemove, progress));
                             break;
 
                           case "addClass":
-                            cancellations.push(animation.fn(element, classNameAdd || className, progress, options));
+                            cancellations.push(animation.fn(element, classNameAdd || className, progress));
                             break;
 
                           case "removeClass":
-                            cancellations.push(animation.fn(element, classNameRemove || className, progress, options));
+                            cancellations.push(animation.fn(element, classNameRemove || className, progress));
                             break;
 
                           default:
-                            cancellations.push(animation.fn(element, progress, options));
+                            cancellations.push(animation.fn(element, progress));
                             break;
                         }
                     });
@@ -9912,11 +9832,6 @@
                     className: className,
                     isClassBased: isClassBased,
                     isSetClassOperation: isSetClassOperation,
-                    applyStyles: function() {
-                        if (options) {
-                            element.css(angular.extend(options.from || {}, options.to || {}));
-                        }
-                    },
                     before: function(allCompleteFn) {
                         beforeComplete = allCompleteFn;
                         run(before, beforeCancel, function() {
@@ -9948,113 +9863,59 @@
                 };
             }
             return {
-                animate: function(element, from, to, className, options) {
-                    className = className || "ng-inline-animate";
-                    options = parseAnimateOptions(options) || {};
-                    options.from = to ? from : null;
-                    options.to = to ? to : from;
-                    return runAnimationPostDigest(function(done) {
-                        return performAnimation("animate", className, stripCommentsFromElement(element), null, null, noop, options, done);
-                    });
-                },
-                enter: function(element, parentElement, afterElement, options) {
-                    options = parseAnimateOptions(options);
+                enter: function(element, parentElement, afterElement, doneCallback) {
                     element = angular.element(element);
                     parentElement = prepareElement(parentElement);
                     afterElement = prepareElement(afterElement);
-                    classBasedAnimationsBlocked(element, true);
+                    blockElementAnimations(element);
                     $delegate.enter(element, parentElement, afterElement);
-                    return runAnimationPostDigest(function(done) {
-                        return performAnimation("enter", "ng-enter", stripCommentsFromElement(element), parentElement, afterElement, noop, options, done);
+                    $rootScope.$$postDigest(function() {
+                        element = stripCommentsFromElement(element);
+                        performAnimation("enter", "ng-enter", element, parentElement, afterElement, noop, doneCallback);
                     });
                 },
-                leave: function(element, options) {
-                    options = parseAnimateOptions(options);
+                leave: function(element, doneCallback) {
                     element = angular.element(element);
                     cancelChildAnimations(element);
-                    classBasedAnimationsBlocked(element, true);
-                    return runAnimationPostDigest(function(done) {
-                        return performAnimation("leave", "ng-leave", stripCommentsFromElement(element), null, null, function() {
+                    blockElementAnimations(element);
+                    $rootScope.$$postDigest(function() {
+                        performAnimation("leave", "ng-leave", stripCommentsFromElement(element), null, null, function() {
                             $delegate.leave(element);
-                        }, options, done);
+                        }, doneCallback);
                     });
                 },
-                move: function(element, parentElement, afterElement, options) {
-                    options = parseAnimateOptions(options);
+                move: function(element, parentElement, afterElement, doneCallback) {
                     element = angular.element(element);
                     parentElement = prepareElement(parentElement);
                     afterElement = prepareElement(afterElement);
                     cancelChildAnimations(element);
-                    classBasedAnimationsBlocked(element, true);
+                    blockElementAnimations(element);
                     $delegate.move(element, parentElement, afterElement);
-                    return runAnimationPostDigest(function(done) {
-                        return performAnimation("move", "ng-move", stripCommentsFromElement(element), parentElement, afterElement, noop, options, done);
+                    $rootScope.$$postDigest(function() {
+                        element = stripCommentsFromElement(element);
+                        performAnimation("move", "ng-move", element, parentElement, afterElement, noop, doneCallback);
                     });
                 },
-                addClass: function(element, className, options) {
-                    return this.setClass(element, className, [], options);
-                },
-                removeClass: function(element, className, options) {
-                    return this.setClass(element, [], className, options);
-                },
-                setClass: function(element, add, remove, options) {
-                    options = parseAnimateOptions(options);
-                    var STORAGE_KEY = "$$animateClasses";
+                addClass: function(element, className, doneCallback) {
                     element = angular.element(element);
                     element = stripCommentsFromElement(element);
-                    if (classBasedAnimationsBlocked(element)) {
-                        return $delegate.$$setClassImmediately(element, add, remove, options);
-                    }
-                    var classes, cache = element.data(STORAGE_KEY);
-                    var hasCache = !!cache;
-                    if (!cache) {
-                        cache = {};
-                        cache.classes = {};
-                    }
-                    classes = cache.classes;
-                    add = isArray(add) ? add : add.split(" ");
-                    forEach(add, function(c) {
-                        if (c && c.length) {
-                            classes[c] = true;
-                        }
-                    });
-                    remove = isArray(remove) ? remove : remove.split(" ");
-                    forEach(remove, function(c) {
-                        if (c && c.length) {
-                            classes[c] = false;
-                        }
-                    });
-                    if (hasCache) {
-                        if (options && cache.options) {
-                            cache.options = angular.extend(cache.options || {}, options);
-                        }
-                        return cache.promise;
-                    } else {
-                        element.data(STORAGE_KEY, cache = {
-                            classes: classes,
-                            options: options
-                        });
-                    }
-                    return cache.promise = runAnimationPostDigest(function(done) {
-                        var parentElement = element.parent();
-                        var elementNode = extractElementNode(element);
-                        var parentNode = elementNode.parentNode;
-                        if (!parentNode || parentNode["$$NG_REMOVED"] || elementNode["$$NG_REMOVED"]) {
-                            done();
-                            return;
-                        }
-                        var cache = element.data(STORAGE_KEY);
-                        element.removeData(STORAGE_KEY);
-                        var state = element.data(NG_ANIMATE_STATE) || {};
-                        var classes = resolveElementClasses(element, cache, state.active);
-                        return !classes ? done() : performAnimation("setClass", classes, element, parentElement, null, function() {
-                            if (classes[0]) $delegate.$$addClassImmediately(element, classes[0]);
-                            if (classes[1]) $delegate.$$removeClassImmediately(element, classes[1]);
-                        }, cache.options, done);
-                    });
+                    performAnimation("addClass", className, element, null, null, function() {
+                        $delegate.addClass(element, className);
+                    }, doneCallback);
                 },
-                cancel: function(promise) {
-                    promise.$$cancelFn();
+                removeClass: function(element, className, doneCallback) {
+                    element = angular.element(element);
+                    element = stripCommentsFromElement(element);
+                    performAnimation("removeClass", className, element, null, null, function() {
+                        $delegate.removeClass(element, className);
+                    }, doneCallback);
+                },
+                setClass: function(element, add, remove, doneCallback) {
+                    element = angular.element(element);
+                    element = stripCommentsFromElement(element);
+                    performAnimation("setClass", [ add, remove ], element, null, null, function() {
+                        $delegate.setClass(element, add, remove);
+                    }, doneCallback);
                 },
                 enabled: function(value, element) {
                     switch (arguments.length) {
@@ -10079,34 +9940,36 @@
                     return !!value;
                 }
             };
-            function performAnimation(animationEvent, className, element, parentElement, afterElement, domOperation, options, doneCallback) {
-                var noopCancel = noop;
-                var runner = animationRunner(element, animationEvent, className, options);
+            function performAnimation(animationEvent, className, element, parentElement, afterElement, domOperation, doneCallback) {
+                var runner = animationRunner(element, animationEvent, className);
                 if (!runner) {
                     fireDOMOperation();
                     fireBeforeCallbackAsync();
                     fireAfterCallbackAsync();
                     closeAnimation();
-                    return noopCancel;
+                    return;
                 }
-                animationEvent = runner.event;
                 className = runner.className;
                 var elementEvents = angular.element._data(runner.node);
                 elementEvents = elementEvents && elementEvents.events;
                 if (!parentElement) {
                     parentElement = afterElement ? afterElement.parent() : element.parent();
                 }
-                if (animationsDisabled(element, parentElement)) {
-                    fireDOMOperation();
-                    fireBeforeCallbackAsync();
-                    fireAfterCallbackAsync();
-                    closeAnimation();
-                    return noopCancel;
-                }
                 var ngAnimateState = element.data(NG_ANIMATE_STATE) || {};
                 var runningAnimations = ngAnimateState.active || {};
                 var totalActiveAnimations = ngAnimateState.totalActive || 0;
                 var lastAnimation = ngAnimateState.last;
+                var skipAnimations;
+                if (runner.isClassBased) {
+                    skipAnimations = ngAnimateState.running || ngAnimateState.disabled || lastAnimation && !lastAnimation.isClassBased;
+                }
+                if (skipAnimations || animationsDisabled(element, parentElement)) {
+                    fireDOMOperation();
+                    fireBeforeCallbackAsync();
+                    fireAfterCallbackAsync();
+                    closeAnimation();
+                    return;
+                }
                 var skipAnimation = false;
                 if (totalActiveAnimations > 0) {
                     var animationsToCancel = [];
@@ -10116,9 +9979,10 @@
                         } else {
                             for (var klass in runningAnimations) {
                                 animationsToCancel.push(runningAnimations[klass]);
+                                cleanup(element, klass);
                             }
-                            ngAnimateState = {};
-                            cleanup(element, true);
+                            runningAnimations = {};
+                            totalActiveAnimations = 0;
                         }
                     } else if (lastAnimation.event == "setClass") {
                         animationsToCancel.push(lastAnimation);
@@ -10138,7 +10002,7 @@
                         });
                     }
                 }
-                if (runner.isClassBased && !runner.isSetClassOperation && animationEvent != "animate" && !skipAnimation) {
+                if (runner.isClassBased && !runner.isSetClassOperation && !skipAnimation) {
                     skipAnimation = animationEvent == "addClass" == element.hasClass(className);
                 }
                 if (skipAnimation) {
@@ -10146,10 +10010,8 @@
                     fireBeforeCallbackAsync();
                     fireAfterCallbackAsync();
                     fireDoneCallbackAsync();
-                    return noopCancel;
+                    return;
                 }
-                runningAnimations = ngAnimateState.active || {};
-                totalActiveAnimations = ngAnimateState.totalActive || 0;
                 if (animationEvent == "leave") {
                     element.one("$destroy", function(e) {
                         var element = angular.element(this);
@@ -10163,12 +10025,7 @@
                         }
                     });
                 }
-                $$jqLite.addClass(element, NG_ANIMATE_CLASS_NAME);
-                if (options && options.tempClasses) {
-                    forEach(options.tempClasses, function(className) {
-                        $$jqLite.addClass(element, className);
-                    });
-                }
+                element.addClass(NG_ANIMATE_CLASS_NAME);
                 var localAnimationCount = globalAnimationCounter++;
                 totalActiveAnimations++;
                 runningAnimations[className] = runner;
@@ -10190,7 +10047,6 @@
                         runner.after(closeAnimation);
                     }
                 });
-                return runner.cancel;
                 function fireDOMCallback(animationPhase) {
                     var eventName = "$animate:" + animationPhase;
                     if (elementEvents && elementEvents[eventName] && elementEvents[eventName].length > 0) {
@@ -10210,7 +10066,11 @@
                 }
                 function fireDoneCallbackAsync() {
                     fireDOMCallback("close");
-                    doneCallback();
+                    if (doneCallback) {
+                        $$asyncCallback(function() {
+                            doneCallback();
+                        });
+                    }
                 }
                 function fireDOMOperation() {
                     if (!fireDOMOperation.hasBeenRun) {
@@ -10220,15 +10080,7 @@
                 }
                 function closeAnimation() {
                     if (!closeAnimation.hasBeenRun) {
-                        if (runner) {
-                            runner.applyStyles();
-                        }
                         closeAnimation.hasBeenRun = true;
-                        if (options && options.tempClasses) {
-                            forEach(options.tempClasses, function(className) {
-                                $$jqLite.removeClass(element, className);
-                            });
-                        }
                         var data = element.data(NG_ANIMATE_STATE);
                         if (data) {
                             if (runner && runner.isClassBased) {
@@ -10276,7 +10128,7 @@
                         delete data.active[className];
                     }
                     if (removeAnimations || !data.totalActive) {
-                        $$jqLite.removeClass(element, NG_ANIMATE_CLASS_NAME);
+                        element.removeClass(NG_ANIMATE_CLASS_NAME);
                         element.removeData(NG_ANIMATE_STATE);
                     }
                 }
@@ -10332,9 +10184,9 @@
             var PROPERTY_KEY = "Property";
             var DELAY_KEY = "Delay";
             var ANIMATION_ITERATION_COUNT_KEY = "IterationCount";
-            var ANIMATION_PLAYSTATE_KEY = "PlayState";
             var NG_ANIMATE_PARENT_KEY = "$$ngAnimateKey";
             var NG_ANIMATE_CSS_DATA_KEY = "$$ngAnimateCSS3Data";
+            var NG_ANIMATE_BLOCK_CLASS_NAME = "ng-animate-block-transitions";
             var ELAPSED_TIME_MAX_DECIMAL_PLACES = 3;
             var CLOSING_TIME_BUFFER = 1.5;
             var ONE_SECOND = 1e3;
@@ -10387,9 +10239,7 @@
                 forEach(elements, function(element) {
                     var elementData = element.data(NG_ANIMATE_CSS_DATA_KEY);
                     if (elementData) {
-                        forEach(elementData.closeAnimationFns, function(fn) {
-                            fn();
-                        });
+                        (elementData.closeAnimationFn || noop)();
                     }
                 });
             }
@@ -10400,15 +10250,20 @@
                     var transitionDelay = 0;
                     var animationDuration = 0;
                     var animationDelay = 0;
+                    var transitionDelayStyle;
+                    var animationDelayStyle;
+                    var transitionDurationStyle;
+                    var transitionPropertyStyle;
                     forEach(element, function(element) {
                         if (element.nodeType == ELEMENT_NODE) {
                             var elementStyles = $window.getComputedStyle(element) || {};
-                            var transitionDurationStyle = elementStyles[TRANSITION_PROP + DURATION_KEY];
+                            transitionDurationStyle = elementStyles[TRANSITION_PROP + DURATION_KEY];
                             transitionDuration = Math.max(parseMaxTime(transitionDurationStyle), transitionDuration);
-                            var transitionDelayStyle = elementStyles[TRANSITION_PROP + DELAY_KEY];
+                            transitionPropertyStyle = elementStyles[TRANSITION_PROP + PROPERTY_KEY];
+                            transitionDelayStyle = elementStyles[TRANSITION_PROP + DELAY_KEY];
                             transitionDelay = Math.max(parseMaxTime(transitionDelayStyle), transitionDelay);
-                            var animationDelayStyle = elementStyles[ANIMATION_PROP + DELAY_KEY];
-                            animationDelay = Math.max(parseMaxTime(elementStyles[ANIMATION_PROP + DELAY_KEY]), animationDelay);
+                            animationDelayStyle = elementStyles[ANIMATION_PROP + DELAY_KEY];
+                            animationDelay = Math.max(parseMaxTime(animationDelayStyle), animationDelay);
                             var aDuration = parseMaxTime(elementStyles[ANIMATION_PROP + DURATION_KEY]);
                             if (aDuration > 0) {
                                 aDuration *= parseInt(elementStyles[ANIMATION_PROP + ANIMATION_ITERATION_COUNT_KEY], 10) || 1;
@@ -10418,8 +10273,12 @@
                     });
                     data = {
                         total: 0,
+                        transitionPropertyStyle: transitionPropertyStyle,
+                        transitionDurationStyle: transitionDurationStyle,
+                        transitionDelayStyle: transitionDelayStyle,
                         transitionDelay: transitionDelay,
                         transitionDuration: transitionDuration,
+                        animationDelayStyle: animationDelayStyle,
                         animationDelay: animationDelay,
                         animationDuration: animationDuration
                     };
@@ -10431,7 +10290,7 @@
             }
             function parseMaxTime(str) {
                 var maxValue = 0;
-                var values = isString(str) ? str.split(/\s*,\s*/) : [];
+                var values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
                 forEach(values, function(value) {
                     maxValue = Math.max(parseFloat(value) || 0, maxValue);
                 });
@@ -10446,8 +10305,7 @@
                 }
                 return parentID + "-" + extractElementNode(element).getAttribute("class");
             }
-            function animateSetup(animationEvent, element, className, styles) {
-                var structural = [ "ng-enter", "ng-leave", "ng-move" ].indexOf(className) >= 0;
+            function animateSetup(animationEvent, element, className, calculationDecorator) {
                 var cacheKey = getCacheKey(element);
                 var eventCacheKey = cacheKey + " " + className;
                 var itemIndex = lookupCache[eventCacheKey] ? ++lookupCache[eventCacheKey].total : 0;
@@ -10456,43 +10314,69 @@
                     var staggerClassName = className + "-stagger";
                     var staggerCacheKey = cacheKey + " " + staggerClassName;
                     var applyClasses = !lookupCache[staggerCacheKey];
-                    applyClasses && $$jqLite.addClass(element, staggerClassName);
+                    applyClasses && element.addClass(staggerClassName);
                     stagger = getElementAnimationDetails(element, staggerCacheKey);
-                    applyClasses && $$jqLite.removeClass(element, staggerClassName);
+                    applyClasses && element.removeClass(staggerClassName);
                 }
-                $$jqLite.addClass(element, className);
+                calculationDecorator = calculationDecorator || function(fn) {
+                    return fn();
+                };
+                element.addClass(className);
                 var formerData = element.data(NG_ANIMATE_CSS_DATA_KEY) || {};
-                var timings = getElementAnimationDetails(element, eventCacheKey);
+                var timings = calculationDecorator(function() {
+                    return getElementAnimationDetails(element, eventCacheKey);
+                });
                 var transitionDuration = timings.transitionDuration;
                 var animationDuration = timings.animationDuration;
-                if (structural && transitionDuration === 0 && animationDuration === 0) {
-                    $$jqLite.removeClass(element, className);
+                if (transitionDuration === 0 && animationDuration === 0) {
+                    element.removeClass(className);
                     return false;
                 }
-                var blockTransition = styles || structural && transitionDuration > 0;
-                var blockAnimation = animationDuration > 0 && stagger.animationDelay > 0 && stagger.animationDuration === 0;
-                var closeAnimationFns = formerData.closeAnimationFns || [];
                 element.data(NG_ANIMATE_CSS_DATA_KEY, {
-                    stagger: stagger,
-                    cacheKey: eventCacheKey,
                     running: formerData.running || 0,
                     itemIndex: itemIndex,
-                    blockTransition: blockTransition,
-                    closeAnimationFns: closeAnimationFns
+                    stagger: stagger,
+                    timings: timings,
+                    closeAnimationFn: noop
                 });
-                var node = extractElementNode(element);
-                if (blockTransition) {
-                    blockTransitions(node, true);
-                    if (styles) {
-                        element.css(styles);
-                    }
+                var isCurrentlyAnimating = formerData.running > 0 || animationEvent == "setClass";
+                if (transitionDuration > 0) {
+                    blockTransitions(element, className, isCurrentlyAnimating);
                 }
-                if (blockAnimation) {
-                    blockAnimations(node, true);
+                if (animationDuration > 0 && stagger.animationDelay > 0 && stagger.animationDuration === 0) {
+                    blockKeyframeAnimations(element);
                 }
                 return true;
             }
-            function animateRun(animationEvent, element, className, activeAnimationComplete, styles) {
+            function isStructuralAnimation(className) {
+                return className == "ng-enter" || className == "ng-move" || className == "ng-leave";
+            }
+            function blockTransitions(element, className, isAnimating) {
+                if (isStructuralAnimation(className) || !isAnimating) {
+                    extractElementNode(element).style[TRANSITION_PROP + PROPERTY_KEY] = "none";
+                } else {
+                    element.addClass(NG_ANIMATE_BLOCK_CLASS_NAME);
+                }
+            }
+            function blockKeyframeAnimations(element) {
+                extractElementNode(element).style[ANIMATION_PROP] = "none 0s";
+            }
+            function unblockTransitions(element, className) {
+                var prop = TRANSITION_PROP + PROPERTY_KEY;
+                var node = extractElementNode(element);
+                if (node.style[prop] && node.style[prop].length > 0) {
+                    node.style[prop] = "";
+                }
+                element.removeClass(NG_ANIMATE_BLOCK_CLASS_NAME);
+            }
+            function unblockKeyframeAnimations(element) {
+                var prop = ANIMATION_PROP;
+                var node = extractElementNode(element);
+                if (node.style[prop] && node.style[prop].length > 0) {
+                    node.style[prop] = "";
+                }
+            }
+            function animateRun(animationEvent, element, className, activeAnimationComplete) {
                 var node = extractElementNode(element);
                 var elementData = element.data(NG_ANIMATE_CSS_DATA_KEY);
                 if (node.getAttribute("class").indexOf(className) == -1 || !elementData) {
@@ -10500,101 +10384,57 @@
                     return;
                 }
                 var activeClassName = "";
-                var pendingClassName = "";
                 forEach(className.split(" "), function(klass, i) {
-                    var prefix = (i > 0 ? " " : "") + klass;
-                    activeClassName += prefix + "-active";
-                    pendingClassName += prefix + "-pending";
+                    activeClassName += (i > 0 ? " " : "") + klass + "-active";
                 });
-                var style = "";
-                var appliedStyles = [];
-                var itemIndex = elementData.itemIndex;
                 var stagger = elementData.stagger;
-                var staggerTime = 0;
-                if (itemIndex > 0) {
-                    var transitionStaggerDelay = 0;
-                    if (stagger.transitionDelay > 0 && stagger.transitionDuration === 0) {
-                        transitionStaggerDelay = stagger.transitionDelay * itemIndex;
-                    }
-                    var animationStaggerDelay = 0;
-                    if (stagger.animationDelay > 0 && stagger.animationDuration === 0) {
-                        animationStaggerDelay = stagger.animationDelay * itemIndex;
-                        appliedStyles.push(CSS_PREFIX + "animation-play-state");
-                    }
-                    staggerTime = Math.round(Math.max(transitionStaggerDelay, animationStaggerDelay) * 100) / 100;
-                }
-                if (!staggerTime) {
-                    $$jqLite.addClass(element, activeClassName);
-                    if (elementData.blockTransition) {
-                        blockTransitions(node, false);
-                    }
-                }
-                var eventCacheKey = elementData.cacheKey + " " + activeClassName;
-                var timings = getElementAnimationDetails(element, eventCacheKey);
+                var timings = elementData.timings;
+                var itemIndex = elementData.itemIndex;
                 var maxDuration = Math.max(timings.transitionDuration, timings.animationDuration);
-                if (maxDuration === 0) {
-                    $$jqLite.removeClass(element, activeClassName);
-                    animateClose(element, className);
-                    activeAnimationComplete();
-                    return;
-                }
-                if (!staggerTime && styles && Object.keys(styles).length > 0) {
-                    if (!timings.transitionDuration) {
-                        element.css("transition", timings.animationDuration + "s linear all");
-                        appliedStyles.push("transition");
-                    }
-                    element.css(styles);
-                }
                 var maxDelay = Math.max(timings.transitionDelay, timings.animationDelay);
                 var maxDelayTime = maxDelay * ONE_SECOND;
-                if (appliedStyles.length > 0) {
-                    var oldStyle = node.getAttribute("style") || "";
-                    if (oldStyle.charAt(oldStyle.length - 1) !== ";") {
-                        oldStyle += ";";
-                    }
-                    node.setAttribute("style", oldStyle + " " + style);
-                }
                 var startTime = Date.now();
                 var css3AnimationEvents = ANIMATIONEND_EVENT + " " + TRANSITIONEND_EVENT;
-                var animationTime = (maxDelay + maxDuration) * CLOSING_TIME_BUFFER;
-                var totalTime = (staggerTime + animationTime) * ONE_SECOND;
-                var staggerTimeout;
-                if (staggerTime > 0) {
-                    $$jqLite.addClass(element, pendingClassName);
-                    staggerTimeout = $timeout(function() {
-                        staggerTimeout = null;
-                        if (timings.transitionDuration > 0) {
-                            blockTransitions(node, false);
-                        }
-                        if (timings.animationDuration > 0) {
-                            blockAnimations(node, false);
-                        }
-                        $$jqLite.addClass(element, activeClassName);
-                        $$jqLite.removeClass(element, pendingClassName);
-                        if (styles) {
-                            if (timings.transitionDuration === 0) {
-                                element.css("transition", timings.animationDuration + "s linear all");
-                            }
-                            element.css(styles);
-                            appliedStyles.push("transition");
-                        }
-                    }, staggerTime * ONE_SECOND, false);
+                var style = "", appliedStyles = [];
+                if (timings.transitionDuration > 0) {
+                    var propertyStyle = timings.transitionPropertyStyle;
+                    if (propertyStyle.indexOf("all") == -1) {
+                        style += CSS_PREFIX + "transition-property: " + propertyStyle + ";";
+                        style += CSS_PREFIX + "transition-duration: " + timings.transitionDurationStyle + ";";
+                        appliedStyles.push(CSS_PREFIX + "transition-property");
+                        appliedStyles.push(CSS_PREFIX + "transition-duration");
+                    }
+                }
+                if (itemIndex > 0) {
+                    if (stagger.transitionDelay > 0 && stagger.transitionDuration === 0) {
+                        var delayStyle = timings.transitionDelayStyle;
+                        style += CSS_PREFIX + "transition-delay: " + prepareStaggerDelay(delayStyle, stagger.transitionDelay, itemIndex) + "; ";
+                        appliedStyles.push(CSS_PREFIX + "transition-delay");
+                    }
+                    if (stagger.animationDelay > 0 && stagger.animationDuration === 0) {
+                        style += CSS_PREFIX + "animation-delay: " + prepareStaggerDelay(timings.animationDelayStyle, stagger.animationDelay, itemIndex) + "; ";
+                        appliedStyles.push(CSS_PREFIX + "animation-delay");
+                    }
+                }
+                if (appliedStyles.length > 0) {
+                    var oldStyle = node.getAttribute("style") || "";
+                    node.setAttribute("style", oldStyle + "; " + style);
                 }
                 element.on(css3AnimationEvents, onAnimationProgress);
-                elementData.closeAnimationFns.push(function() {
+                element.addClass(activeClassName);
+                elementData.closeAnimationFn = function() {
                     onEnd();
                     activeAnimationComplete();
-                });
+                };
+                var staggerTime = itemIndex * (Math.max(stagger.animationDelay, stagger.transitionDelay) || 0);
+                var animationTime = (maxDelay + maxDuration) * CLOSING_TIME_BUFFER;
+                var totalTime = (staggerTime + animationTime) * ONE_SECOND;
                 elementData.running++;
                 animationCloseHandler(element, totalTime);
                 return onEnd;
-                function onEnd() {
+                function onEnd(cancelled) {
                     element.off(css3AnimationEvents, onAnimationProgress);
-                    $$jqLite.removeClass(element, activeClassName);
-                    $$jqLite.removeClass(element, pendingClassName);
-                    if (staggerTimeout) {
-                        $timeout.cancel(staggerTimeout);
-                    }
+                    element.removeClass(activeClassName);
                     animateClose(element, className);
                     var node = extractElementNode(element);
                     for (var i in appliedStyles) {
@@ -10611,29 +10451,30 @@
                     }
                 }
             }
-            function blockTransitions(node, bool) {
-                node.style[TRANSITION_PROP + PROPERTY_KEY] = bool ? "none" : "";
+            function prepareStaggerDelay(delayStyle, staggerDelay, index) {
+                var style = "";
+                forEach(delayStyle.split(","), function(val, i) {
+                    style += (i > 0 ? "," : "") + (index * staggerDelay + parseInt(val, 10)) + "s";
+                });
+                return style;
             }
-            function blockAnimations(node, bool) {
-                node.style[ANIMATION_PROP + ANIMATION_PLAYSTATE_KEY] = bool ? "paused" : "";
-            }
-            function animateBefore(animationEvent, element, className, styles) {
-                if (animateSetup(animationEvent, element, className, styles)) {
+            function animateBefore(animationEvent, element, className, calculationDecorator) {
+                if (animateSetup(animationEvent, element, className, calculationDecorator)) {
                     return function(cancelled) {
                         cancelled && animateClose(element, className);
                     };
                 }
             }
-            function animateAfter(animationEvent, element, className, afterAnimationComplete, styles) {
+            function animateAfter(animationEvent, element, className, afterAnimationComplete) {
                 if (element.data(NG_ANIMATE_CSS_DATA_KEY)) {
-                    return animateRun(animationEvent, element, className, afterAnimationComplete, styles);
+                    return animateRun(animationEvent, element, className, afterAnimationComplete);
                 } else {
                     animateClose(element, className);
                     afterAnimationComplete();
                 }
             }
-            function animate(animationEvent, element, className, animationComplete, options) {
-                var preReflowCancellation = animateBefore(animationEvent, element, className, options.from);
+            function animate(animationEvent, element, className, animationComplete) {
+                var preReflowCancellation = animateBefore(animationEvent, element, className);
                 if (!preReflowCancellation) {
                     clearCacheAfterReflow();
                     animationComplete();
@@ -10641,14 +10482,16 @@
                 }
                 var cancel = preReflowCancellation;
                 afterReflow(element, function() {
-                    cancel = animateAfter(animationEvent, element, className, animationComplete, options.to);
+                    unblockTransitions(element, className);
+                    unblockKeyframeAnimations(element);
+                    cancel = animateAfter(animationEvent, element, className, animationComplete);
                 });
                 return function(cancelled) {
                     (cancel || noop)(cancelled);
                 };
             }
             function animateClose(element, className) {
-                $$jqLite.removeClass(element, className);
+                element.removeClass(className);
                 var data = element.data(NG_ANIMATE_CSS_DATA_KEY);
                 if (data) {
                     if (data.running) {
@@ -10660,74 +10503,88 @@
                 }
             }
             return {
-                animate: function(element, className, from, to, animationCompleted, options) {
-                    options = options || {};
-                    options.from = from;
-                    options.to = to;
-                    return animate("animate", element, className, animationCompleted, options);
+                enter: function(element, animationCompleted) {
+                    return animate("enter", element, "ng-enter", animationCompleted);
                 },
-                enter: function(element, animationCompleted, options) {
-                    options = options || {};
-                    return animate("enter", element, "ng-enter", animationCompleted, options);
+                leave: function(element, animationCompleted) {
+                    return animate("leave", element, "ng-leave", animationCompleted);
                 },
-                leave: function(element, animationCompleted, options) {
-                    options = options || {};
-                    return animate("leave", element, "ng-leave", animationCompleted, options);
+                move: function(element, animationCompleted) {
+                    return animate("move", element, "ng-move", animationCompleted);
                 },
-                move: function(element, animationCompleted, options) {
-                    options = options || {};
-                    return animate("move", element, "ng-move", animationCompleted, options);
-                },
-                beforeSetClass: function(element, add, remove, animationCompleted, options) {
-                    options = options || {};
+                beforeSetClass: function(element, add, remove, animationCompleted) {
                     var className = suffixClasses(remove, "-remove") + " " + suffixClasses(add, "-add");
-                    var cancellationMethod = animateBefore("setClass", element, className, options.from);
+                    var cancellationMethod = animateBefore("setClass", element, className, function(fn) {
+                        var klass = element.attr("class");
+                        element.removeClass(remove);
+                        element.addClass(add);
+                        var timings = fn();
+                        element.attr("class", klass);
+                        return timings;
+                    });
                     if (cancellationMethod) {
-                        afterReflow(element, animationCompleted);
+                        afterReflow(element, function() {
+                            unblockTransitions(element, className);
+                            unblockKeyframeAnimations(element);
+                            animationCompleted();
+                        });
                         return cancellationMethod;
                     }
                     clearCacheAfterReflow();
                     animationCompleted();
                 },
-                beforeAddClass: function(element, className, animationCompleted, options) {
-                    options = options || {};
-                    var cancellationMethod = animateBefore("addClass", element, suffixClasses(className, "-add"), options.from);
+                beforeAddClass: function(element, className, animationCompleted) {
+                    var cancellationMethod = animateBefore("addClass", element, suffixClasses(className, "-add"), function(fn) {
+                        element.addClass(className);
+                        var timings = fn();
+                        element.removeClass(className);
+                        return timings;
+                    });
                     if (cancellationMethod) {
-                        afterReflow(element, animationCompleted);
+                        afterReflow(element, function() {
+                            unblockTransitions(element, className);
+                            unblockKeyframeAnimations(element);
+                            animationCompleted();
+                        });
                         return cancellationMethod;
                     }
                     clearCacheAfterReflow();
                     animationCompleted();
                 },
-                beforeRemoveClass: function(element, className, animationCompleted, options) {
-                    options = options || {};
-                    var cancellationMethod = animateBefore("removeClass", element, suffixClasses(className, "-remove"), options.from);
-                    if (cancellationMethod) {
-                        afterReflow(element, animationCompleted);
-                        return cancellationMethod;
-                    }
-                    clearCacheAfterReflow();
-                    animationCompleted();
-                },
-                setClass: function(element, add, remove, animationCompleted, options) {
-                    options = options || {};
+                setClass: function(element, add, remove, animationCompleted) {
                     remove = suffixClasses(remove, "-remove");
                     add = suffixClasses(add, "-add");
                     var className = remove + " " + add;
-                    return animateAfter("setClass", element, className, animationCompleted, options.to);
+                    return animateAfter("setClass", element, className, animationCompleted);
                 },
-                addClass: function(element, className, animationCompleted, options) {
-                    options = options || {};
-                    return animateAfter("addClass", element, suffixClasses(className, "-add"), animationCompleted, options.to);
+                addClass: function(element, className, animationCompleted) {
+                    return animateAfter("addClass", element, suffixClasses(className, "-add"), animationCompleted);
                 },
-                removeClass: function(element, className, animationCompleted, options) {
-                    options = options || {};
-                    return animateAfter("removeClass", element, suffixClasses(className, "-remove"), animationCompleted, options.to);
+                beforeRemoveClass: function(element, className, animationCompleted) {
+                    var cancellationMethod = animateBefore("removeClass", element, suffixClasses(className, "-remove"), function(fn) {
+                        var klass = element.attr("class");
+                        element.removeClass(className);
+                        var timings = fn();
+                        element.attr("class", klass);
+                        return timings;
+                    });
+                    if (cancellationMethod) {
+                        afterReflow(element, function() {
+                            unblockTransitions(element, className);
+                            unblockKeyframeAnimations(element);
+                            animationCompleted();
+                        });
+                        return cancellationMethod;
+                    }
+                    animationCompleted();
+                },
+                removeClass: function(element, className, animationCompleted) {
+                    return animateAfter("removeClass", element, suffixClasses(className, "-remove"), animationCompleted);
                 }
             };
             function suffixClasses(classes, suffix) {
                 var className = "";
-                classes = isArray(classes) ? classes : classes.split(/\s+/);
+                classes = angular.isArray(classes) ? classes : classes.split(/\s+/);
                 forEach(classes, function(klass, i) {
                     if (klass && klass.length > 0) {
                         className += (i > 0 ? " " : "") + klass + suffix;
@@ -26624,6 +26481,72 @@ if (typeof Object.getPrototypeOf !== "function") {
         angularMoment(angular, window.moment);
     }
 })();
+(function() {
+    "use strict";
+    angular.module("anim-in-out", [ "ngAnimate" ]).animation(".anim-in-out", [ "$rootScope", "$timeout", "$window", function($rootScope, $timeout, $window) {
+        return {
+            enter: function(element, done) {
+                var sync = $rootScope.$eval(angular.element(element).attr("data-anim-sync")) !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-sync")) : false, speed = angular.element(element).attr("data-anim-speed") !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-speed")) : 1e3, inSpeed = angular.element(element).attr("data-anim-in-speed") !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-in-speed")) : speed, outSpeed = angular.element(element).attr("data-anim-out-speed") !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-out-speed")) : speed;
+                try {
+                    var observer = new MutationObserver(function(mutations) {
+                        observer.disconnect();
+                        $window.requestAnimationFrame(function() {
+                            $timeout(done, sync ? 0 : outSpeed);
+                        });
+                    });
+                    observer.observe(element[0], {
+                        attributes: true,
+                        childList: false,
+                        characterData: false
+                    });
+                } catch (e) {
+                    $timeout(done, Math.max(100, sync ? 0 : outSpeed));
+                }
+                angular.element(element).addClass("anim-in-setup");
+                return function(cancelled) {
+                    angular.element(element).removeClass("anim-in-setup");
+                    angular.element(element).addClass("anim-in");
+                    if (!cancelled) {
+                        if (angular.element(element).children().length > 0 && angular.element(element).children().scope() !== undefined) {
+                            angular.element(element).children().scope().$broadcast("animIn", element, inSpeed);
+                        }
+                        $timeout(function() {
+                            $rootScope.$emit("animEnd", element, inSpeed);
+                            angular.element(element).removeClass("anim-in");
+                        }, inSpeed);
+                    }
+                };
+            },
+            leave: function(element, done) {
+                var speed = angular.element(element).attr("data-anim-speed") !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-speed")) : 1e3, outSpeed = angular.element(element).attr("data-anim-out-speed") !== undefined ? $rootScope.$eval(angular.element(element).attr("data-anim-out-speed")) : speed;
+                $rootScope.$emit("animStart", element, outSpeed);
+                if (angular.element(element).children().length > 0) {
+                    angular.element(element).children().scope().$broadcast("animOut", element, outSpeed);
+                }
+                try {
+                    var observer = new MutationObserver(function(mutations) {
+                        observer.disconnect();
+                        $window.requestAnimationFrame(function() {
+                            angular.element(element).removeClass("anim-out-setup");
+                            angular.element(element).addClass("anim-out");
+                            $timeout(done, outSpeed);
+                        });
+                    });
+                    observer.observe(element[0], {
+                        attributes: true,
+                        childList: false,
+                        characterData: false
+                    });
+                } catch (e) {
+                    angular.element(element).removeClass("anim-out-setup");
+                    angular.element(element).addClass("anim-out");
+                    $timeout(done, Math.max(100, outSpeed));
+                }
+                angular.element(element).addClass("anim-out-setup");
+            }
+        };
+    } ]);
+})();
 angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com").factory("Auth", function($firebaseAuth) {
     var ref = new Firebase("https://joyce.firebaseio.com");
     return $firebaseAuth(ref);
@@ -26768,15 +26691,6 @@ angular.module("login", []).controller("loginController", function($scope, $stat
         });
     };
 });
-angular.module("stream", []).controller("streamController", function($scope) {});
-angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
-    return {
-        restrict: "E",
-        scope: {},
-        controller: "<%= name%>Controller as <%= name%>Ctrl",
-        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
-    };
-}).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("write", []).controller("writeController", function($scope, Stream, $state) {
     $scope.words = 0;
     $scope.stream = false;
@@ -26785,9 +26699,13 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         streamRef = streamObj;
         streamObj.$bindTo($scope, "stream").then(function() {
             $scope.updateWords();
+            $scope.created = new Date(parseInt(streamObj.created));
         });
-        $scope.created = new Date(parseInt(streamObj.created));
     });
+    $scope.preventPaste = function(e) {
+        e.preventDefault();
+        return false;
+    };
     $scope.updateWords = function(e) {
         var text = $scope.stream.writing + $scope.stream.written;
         var spaces = text.split(" "), lines = [];
@@ -26813,7 +26731,8 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         restrict: "A",
         require: "?ngModel",
         scope: {
-            overflow: "="
+            overflow: "=",
+            previousLine: "="
         },
         link: function(scope, element, attrs) {
             var origHeight = element[0].scrollHeight, lineheight = parseInt($(element[0]).css("line-height"));
@@ -26837,21 +26756,31 @@ angular.module("write", []).controller("writeController", function($scope, Strea
                         }
                     }
                     scope.overflow += over;
+                    previousLine = over;
                     element.val(remainder);
                 }
             });
         }
     };
 });
+angular.module("stream", []).controller("streamController", function($scope) {});
+angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
+    return {
+        restrict: "E",
+        scope: {},
+        controller: "<%= name%>Controller as <%= name%>Ctrl",
+        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
+    };
+}).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "\n");
-    $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <ul>\n    <li ng-if="!!date" ng-repeat="(id, date) in user.streams">\n      {{date}}\n    </li>\n  </ul>\n</div>\n');
+    $templateCache.put("features/home/_home.html", '<div class="wrapper center anim-slide-below-fade">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <ul>\n    <li ng-if="!!date" ng-repeat="(id, date) in user.streams">\n      {{date}}\n    </li>\n  </ul>\n</div>\n');
     $templateCache.put("features/login/_login.html", '<div class="wrapper">\n  <a ng-click="login()">Login with Twitter</a>\n</div>\n');
     $templateCache.put("features/stream/_stream.html", "\n");
-    $templateCache.put("features/write/_write.html", '<h2 ng-if="!stream">\n  Loading...\n</h2>\n<div class="wrapper" ng-show="stream">\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false" ng-model="stream.writing" overflow="stream.written" placeholder="Just write it down"></textarea>\n  <div class="stream-actions center" ng-init="abandon_confirm=false">\n    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" ng-class="{&#39;disabled&#39;: !words}">Complete</a>\n  </div>\n</div>\n<div class="caption wrapper wrapper--dark" ng-show="stream">\n  <div class="left">\n    <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n  </div>\n  <span class="faded right"> {{created | amCalendar}}</span>\n</div>\n');
+    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n<div class="wrapper dark">\n  <div class="stream-actions">\n    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}">Complete</a>\n  </div>\n</div>\n');
     $templateCache.put("patterns/_pattern/_pattern.html", "");
 } ]);
-angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "services", "firebase", "angularMoment", "home", "write", "login" ]).run(function() {
+angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "anim-in-out", "services", "firebase", "angularMoment", "home", "write", "login" ]).run(function() {
     moment.locale("en", {
         calendar: {
             lastDay: "[Yesterday at] h:mma",

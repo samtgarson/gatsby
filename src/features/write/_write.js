@@ -6,9 +6,16 @@ angular.module('write', [])
 
         Stream.getLatest().then(function(streamObj) {
             streamRef = streamObj;
-            streamObj.$bindTo($scope, 'stream').then(function() {$scope.updateWords();});
-            $scope.created = new Date(parseInt(streamObj.created));
+            streamObj.$bindTo($scope, 'stream').then(function() {
+                $scope.updateWords();
+                $scope.created = new Date(parseInt(streamObj.created));
+            });
         });
+
+        $scope.preventPaste = function (e) {
+            e.preventDefault();
+            return false;
+        };
 
         $scope.updateWords = function (e) {
             var text = $scope.stream.writing + $scope.stream.written;
@@ -43,7 +50,8 @@ angular.module('write', [])
             restrict: 'A', // only activate on element attribute
             require: '?ngModel', // get a hold of NgModelController
             scope: {
-                overflow: '='
+                overflow: '=',
+                previousLine: '='
             },
             link: function(scope, element, attrs) {
                 var origHeight = element[0].scrollHeight, 
@@ -75,6 +83,7 @@ angular.module('write', [])
                             }
                         }
                         scope.overflow += over;
+                        previousLine = over;
                         element.val(remainder);
                     }
                 });

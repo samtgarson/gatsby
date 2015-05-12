@@ -27,13 +27,16 @@ a {
 .center {
     text-align: center;
 }
+.align-right {
+    text-align: right;
+}
 
 .spacer {
     margin: 3.5em auto;
 }
 
 body {
-    background-color: #eee;
+    // background-color: #eee;
 }
 
 textarea {
@@ -45,12 +48,13 @@ textarea {
     border: 0;
     box-sizing: border-box;
     overflow: hidden;
-     resize: none;
+    resize: none;
+    margin-bottom: 2em;
 }
 
 .button {
     font-size: 1.2em;
-    margin: 1em 4em 0;
+    margin: 1em 0;
     text-decoration: underline;
     display: inline-block;
     opacity: .6;

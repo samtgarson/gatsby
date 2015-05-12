@@ -1,15 +1,17 @@
-<h2 ng-if="!stream">
-  Loading...
-</h2>
-<div class="wrapper" ng-show="stream">
-  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false" ng-model="stream.writing" overflow="stream.written" placeholder="Just write it down"></textarea>
-  <div class="stream-actions center" ng-init="abandon_confirm=false">
-    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?'Sure?':'Abandon'}}</a><a class="button" ng-class="{&#39;disabled&#39;: !words}">Complete</a>
+<div class="wrapper">
+  <p class="faded">
+    {{prev}}
+  </p>
+  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>
+  <div class="stream-meta center">
+    <div class="left">
+      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>
+    </div>
+    <span class="faded right"> {{created | amCalendar}}</span>
   </div>
 </div>
-<div class="caption wrapper wrapper--dark" ng-show="stream">
-  <div class="left">
-    <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>
+<div class="wrapper dark">
+  <div class="stream-actions">
+    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?'Sure?':'Abandon'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}">Complete</a>
   </div>
-  <span class="faded right"> {{created | amCalendar}}</span>
 </div>

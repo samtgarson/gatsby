@@ -17,14 +17,11 @@
   <body>
     <nav ng-class="{&#39;slide&#39;: !!name}">
       <div class="nav__slider">
-        <h1 class="nav__item">
+        <h1>
           Joyce
         </h1>
-        <div class="nav__item" ng-if="!!name">
-          <a class="left" href="/logout">Logout</a><a class="left avatar" href="/me"><img ng-src="{{avatar}}" /></a>
-        </div>
       </div>
     </nav>
-    <ui-view></ui-view>
+    <ui-view class="anim-in-out anim-fade" data-anim-speed="500"></ui-view>
   </body>
 </html>

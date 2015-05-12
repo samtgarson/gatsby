@@ -1,67 +1,90 @@
+body {
+    background-color: #eee;
+}
+
+ui-view {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.loader {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-color: rgba(#eee, 1);
+
+    
+}
+
 .wrapper {
-    max-width: 600px;
+    padding: 30px 50px;
+    padding-left: calc(50% - 300px);
+    padding-right: calc(50% - 300px);
+    box-sizing: border-box;
     width: 100%;
     margin: 0 auto;
-    padding: 50px 50px;
     background-color: #fff;
+    min-height: 165px;
 
-    &.wrapper--dark {
+    &.dark {
         background-color: transparent;
-        padding-top: 20px;
     }
 }
 
 nav {
-    max-width: 600px;
     width: 100%;
     margin: 0 auto;
     padding: 30px 0 20px;;
     overflow: hidden;
     position: relative;
     height: 30px;
+    background-color: #fff;
 
     &.slide:hover .nav__slider {
         transform: translateY(-50%);
     }
 
-    .nav__slider {
+    h1 {
         width: 100%;
-        height: 200%;
-        transition: transform .3s ease-in-out;
-        position: absolute;
+        height: 50%;
+        display: block;
+        text-align: center;
+        float: left;
+        margin: 0;
 
-        .nav__item {
-            width: 100%;
-            height: 50%;
-            display: block;
-            text-align: center;
-            float: left;
-            margin: 0;
+        a {
+            font-style: italic;
+            line-height: 1.2em;
+            text-decoration: none;
+        }
 
-            a {
-                font-style: italic;
-                line-height: 1.2em;
-                text-decoration: none;
-            }
-
-            .avatar {
+        .avatar {
+            opacity: 1;
+            &:hover img {
                 opacity: 1;
-                &:hover img {
-                    opacity: 1;
-                    transition: opacity .2s;
-                }
-                img {
-                    border-radius: 50px;
-                    height: 2.6em;
-                    opacity: 0.8;
-                    margin-left: 1.5em;
-                    vertical-align: middle;
-                    margin-top: -0.6em;
-                }
+                transition: opacity .2s;
+            }
+            img {
+                border-radius: 50px;
+                height: 2.6em;
+                opacity: 0.8;
+                margin-left: 1.5em;
+                vertical-align: middle;
+                margin-top: -0.6em;
             }
         }
     }
 }
+.stream-meta {
+    font-size: .8em;
+    padding-bottom: 15px;
+}
 .stream-actions {
-    margin-top: 2em;
+    text-align: right;
+    a {
+        margin-left: 1em;;
+
+    }
 }
