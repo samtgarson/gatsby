@@ -1,8 +1,13 @@
 <div class="wrapper center">
   <a class="button" ui-sref="write">{{user.latest?'Continue writing':'Start writing'}}</a>
   <ul>
-    <li ng-if="!!date" ng-repeat="(id, date) in user.streams">
-      {{date}}
+    <li ng-if="!!stream" ng-repeat="stream in user.streams">
+      <h2>
+        {{stream.title}}
+      </h2>
+      <p>
+        {{stream.completed | amCalendar}}
+      </p>
     </li>
   </ul>
 </div>

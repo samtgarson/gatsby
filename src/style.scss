@@ -1,9 +1,4 @@
-// Import UI library
 @import "brand/*";
-@import "layout/**";
-@import "patterns/**";
-
-
 
 input,
 textarea,
@@ -35,8 +30,11 @@ a {
     margin: 3.5em auto;
 }
 
-body {
-    // background-color: #eee;
+@mixin mobile {
+    @media only screen and (min-width: 0px) and (max-width: 750px) { @content; }
+}
+@mixin desktop {
+    @media only screen and (min-width: 750px) { @content; }
 }
 
 textarea {
@@ -68,4 +66,27 @@ textarea {
         opacity: .2;
         pointer-events: none;
     }
+
+    &.ng-animate {
+        transition-duration: 0;
+    }
 }
+
+input {
+    background-color: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(#000, .5);
+    padding: 0 10px;
+    box-sizing: border-box;
+    outline: 0;
+    font-size: 2em;
+    width: 100%;
+    &::placeholder {
+        font-style: italic;
+    }
+}
+
+// Import UI library
+@import "layout/**";
+@import "patterns/**";
+

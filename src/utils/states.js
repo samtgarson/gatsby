@@ -72,6 +72,17 @@ angular.module('states', [])
                     }]
                 }
             })
+            .state('title', {
+                'url'         : '/title',
+                'templateUrl' : templater('title'),
+                'controller'  : 'titleController',
+                'params'      : {'text': null},
+                'resolve'     : {
+                    "currentAuth"  : ["Auth", function (Auth) {
+                        return Auth.$requireAuth();
+                    }]
+                }
+            })
             .state('stream', {
                 'url'         : '/stream/:id',
                 'templateUrl' : templater('stream'),

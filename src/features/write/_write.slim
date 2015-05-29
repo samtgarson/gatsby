@@ -1,7 +1,7 @@
 
 .wrapper
     p.faded {{prev}}
-    textarea ng-paste="preventPaste($event)" ng-model="stream.writing" ng-focus="abandon_confirm=false" overflow="stream.written" previousLine="prev" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
+    textarea ng-paste="preventPaste($event)" ng-model="stream.writing" ng-focus="abandon_confirm=false; complete_confirm=false" overflow="stream.written" previousLine="prev" ng-change="updateWords()" autofocus="" placeholder="Just write it down"
     .stream-meta.center 
         .left
             span {{words}} 
@@ -10,4 +10,4 @@
 .wrapper.dark
     .stream-actions
         a.button#abandon ng-click="abandon()" {{abandon_confirm?'Sure?':'Abandon'}}
-        a.button#confirm ng-class="{'disabled': !words}" Complete
+        a.button#confirm ng-class="{'disabled': !words}" ng-click="complete()" Complete

@@ -1,0 +1,9 @@
+<div class="wrapper">
+  <input autofocus="true" ng-model="title" placeholder="untitled" type="text" />
+</div>
+<div class="wrapper dark">
+  <a class="button" ui-sref="write">Back</a>
+  <div class="stream-actions">
+    <a class="button" ng-click="save()">{{saving?'Saving...':'Done'}}</a>
+  </div>
+</div>

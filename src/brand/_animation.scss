@@ -1,3 +1,29 @@
+// first it helps to have a single transition for everything. you can always fine-tune later:
+$base-transition: 0.4s ease all;
+ 
+ 
+// this set of mixins which works for both ng-if and and ng-show:
+ 
+@mixin revealTo($transition: $base-transition) {
+  @content;
+  // this is the state the element should animate towards and stay in after the animation.
+  // now we define the angular specific classes for ng-show and ng-if. This is where the animation is running *towards*:
+  &.ng-enter.ng-enter-active, &.ng-hide-remove, &.ng-hide-add, &.ng-leave {
+    @content;
+    transition: $transition;
+    display: block !important ;
+  }
+}
+@mixin revealFrom($transition: $base-transition) {
+  // at last, we define where the animation is running from:
+  &.ng-enter, &.ng-hide, &.ng-leave.ng-leave-active {
+    @content;
+    transition: $transition;
+  }
+}
+ 
+ 
+
 .anim-in-out.anim-in-setup.anim-fade, .anim-in-out.anim-in-setup .anim-fade {
   opacity: 0; }
 .anim-in-out.anim-in-setup.anim-slide-left, .anim-in-out.anim-in-setup .anim-slide-left {

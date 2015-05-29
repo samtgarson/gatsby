@@ -9,7 +9,7 @@ var gulp            = require('gulp'),
 
 
 // Define main 
-var jsFiles = mainBowerFiles().concat(['src/*/**/*.js', 'src/templates.js', 'src/app.js']);
+var jsFiles = mainBowerFiles().concat(['src/templates.js', 'src/*/**/*.js', 'src/app.js']);
 
 // Run a local web server
 gulp.task('connect', function() {

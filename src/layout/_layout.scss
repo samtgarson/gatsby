@@ -15,11 +15,11 @@ ui-view {
     height: 100%;
     background-color: rgba(#eee, 1);
 
-    
+
 }
 
 .wrapper {
-    padding: 30px 50px;
+    padding: 30px;
     padding-left: calc(50% - 300px);
     padding-right: calc(50% - 300px);
     box-sizing: border-box;
@@ -30,6 +30,10 @@ ui-view {
 
     &.dark {
         background-color: transparent;
+    }
+
+    @include mobile {
+        padding: 30px;
     }
 }
 
@@ -82,9 +86,23 @@ nav {
     padding-bottom: 15px;
 }
 .stream-actions {
-    text-align: right;
+    display: inline-block;
+    float: right;
     a {
         margin-left: 1em;;
+    }
+    input {
+        margin-right: 0;
+        width: 50%;
+        transition: width .2s;
 
+        @include revealFrom () {
+            width: 0;
+            opacity: 0;
+        }
+        @include revealTo () {
+            width: 50%;
+            opacity: 1;
+        }
     }
 }

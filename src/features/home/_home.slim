@@ -2,4 +2,6 @@
     a.button ui-sref="write" {{user.latest?'Continue writing':'Start writing'}}
     
     ul
-        li ng-repeat="(id, date) in user.streams" ng-if="!!date" {{date}}
+        li ng-repeat="stream in user.streams" ng-if="!!stream" 
+            h2 {{stream.title}}
+            p {{stream.completed | amCalendar}}

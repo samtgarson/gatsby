@@ -22780,25 +22780,11 @@ var Sprint;
     function setHookCallback(callback) {
         hookCallback = callback;
     }
-    function defaultParsingFlags() {
-        return {
-            empty: false,
-            unusedTokens: [],
-            unusedInput: [],
-            overflow: -2,
-            charsLeftOver: 0,
-            nullInput: false,
-            invalidMonth: null,
-            invalidFormat: false,
-            userInvalidated: false,
-            iso: false
-        };
-    }
     function isArray(input) {
         return Object.prototype.toString.call(input) === "[object Array]";
     }
     function isDate(input) {
-        return Object.prototype.toString.call(input) === "[object Date]" || input instanceof Date;
+        return input instanceof Date || Object.prototype.toString.call(input) === "[object Date]";
     }
     function map(arr, fn) {
         var res = [], i;
@@ -22827,11 +22813,32 @@ var Sprint;
     function create_utc__createUTC(input, format, locale, strict) {
         return createLocalOrUTC(input, format, locale, strict, true).utc();
     }
+    function defaultParsingFlags() {
+        return {
+            empty: false,
+            unusedTokens: [],
+            unusedInput: [],
+            overflow: -2,
+            charsLeftOver: 0,
+            nullInput: false,
+            invalidMonth: null,
+            invalidFormat: false,
+            userInvalidated: false,
+            iso: false
+        };
+    }
+    function getParsingFlags(m) {
+        if (m._pf == null) {
+            m._pf = defaultParsingFlags();
+        }
+        return m._pf;
+    }
     function valid__isValid(m) {
         if (m._isValid == null) {
-            m._isValid = !isNaN(m._d.getTime()) && m._pf.overflow < 0 && !m._pf.empty && !m._pf.invalidMonth && !m._pf.nullInput && !m._pf.invalidFormat && !m._pf.userInvalidated;
+            var flags = getParsingFlags(m);
+            m._isValid = !isNaN(m._d.getTime()) && flags.overflow < 0 && !flags.empty && !flags.invalidMonth && !flags.nullInput && !flags.invalidFormat && !flags.userInvalidated;
             if (m._strict) {
-                m._isValid = m._isValid && m._pf.charsLeftOver === 0 && m._pf.unusedTokens.length === 0 && m._pf.bigHour === undefined;
+                m._isValid = m._isValid && flags.charsLeftOver === 0 && flags.unusedTokens.length === 0 && flags.bigHour === undefined;
             }
         }
         return m._isValid;
@@ -22839,9 +22846,9 @@ var Sprint;
     function valid__createInvalid(flags) {
         var m = create_utc__createUTC(NaN);
         if (flags != null) {
-            extend(m._pf, flags);
+            extend(getParsingFlags(m), flags);
         } else {
-            m._pf.userInvalidated = true;
+            getParsingFlags(m).userInvalidated = true;
         }
         return m;
     }
@@ -22873,7 +22880,7 @@ var Sprint;
             to._offset = from._offset;
         }
         if (typeof from._pf !== "undefined") {
-            to._pf = from._pf;
+            to._pf = getParsingFlags(from);
         }
         if (typeof from._locale !== "undefined") {
             to._locale = from._locale;
@@ -22900,7 +22907,7 @@ var Sprint;
         }
     }
     function isMoment(obj) {
-        return obj instanceof Moment || obj != null && hasOwnProp(obj, "_isAMomentObject");
+        return obj instanceof Moment || obj != null && obj._isAMomentObject != null;
     }
     function toInt(argumentForCoercion) {
         var coercedNumber = +argumentForCoercion, value = 0;
@@ -23223,7 +23230,7 @@ var Sprint;
         if (month != null) {
             array[MONTH] = month;
         } else {
-            config._pf.invalidMonth = input;
+            getParsingFlags(config).invalidMonth = input;
         }
     });
     var defaultLocaleMonths = "January_February_March_April_May_June_July_August_September_October_November_December".split("_");
@@ -23287,12 +23294,12 @@ var Sprint;
     function checkOverflow(m) {
         var overflow;
         var a = m._a;
-        if (a && m._pf.overflow === -2) {
+        if (a && getParsingFlags(m).overflow === -2) {
             overflow = a[MONTH] < 0 || a[MONTH] > 11 ? MONTH : a[DATE] < 1 || a[DATE] > daysInMonth(a[YEAR], a[MONTH]) ? DATE : a[HOUR] < 0 || a[HOUR] > 24 || a[HOUR] === 24 && (a[MINUTE] !== 0 || a[SECOND] !== 0 || a[MILLISECOND] !== 0) ? HOUR : a[MINUTE] < 0 || a[MINUTE] > 59 ? MINUTE : a[SECOND] < 0 || a[SECOND] > 59 ? SECOND : a[MILLISECOND] < 0 || a[MILLISECOND] > 999 ? MILLISECOND : -1;
-            if (m._pf._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
+            if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
                 overflow = DATE;
             }
-            m._pf.overflow = overflow;
+            getParsingFlags(m).overflow = overflow;
         }
         return m;
     }
@@ -23302,10 +23309,10 @@ var Sprint;
         }
     }
     function deprecate(msg, fn) {
-        var firstTime = true;
+        var firstTime = true, msgWithStack = msg + "\n" + new Error().stack;
         return extend(function() {
             if (firstTime) {
-                warn(msg);
+                warn(msgWithStack);
                 firstTime = false;
             }
             return fn.apply(this, arguments);
@@ -23326,7 +23333,7 @@ var Sprint;
     function configFromISO(config) {
         var i, l, string = config._i, match = from_string__isoRegex.exec(string);
         if (match) {
-            config._pf.iso = true;
+            getParsingFlags(config).iso = true;
             for (i = 0, l = isoDates.length; i < l; i++) {
                 if (isoDates[i][1].exec(string)) {
                     config._f = isoDates[i][0] + (match[6] || " ");
@@ -23503,7 +23510,7 @@ var Sprint;
         if (config._dayOfYear) {
             yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
             if (config._dayOfYear > daysInYear(yearToUse)) {
-                config._pf._overflowDayOfYear = true;
+                getParsingFlags(config)._overflowDayOfYear = true;
             }
             date = createUTCDate(yearToUse, 0, config._dayOfYear);
             config._a[MONTH] = date.getUTCMonth();
@@ -23563,7 +23570,7 @@ var Sprint;
             return;
         }
         config._a = [];
-        config._pf.empty = true;
+        getParsingFlags(config).empty = true;
         var string = "" + config._i, i, parsedInput, tokens, token, skipped, stringLength = string.length, totalParsedInputLength = 0;
         tokens = expandFormat(config._f, config._locale).match(formattingTokens) || [];
         for (i = 0; i < tokens.length; i++) {
@@ -23572,28 +23579,28 @@ var Sprint;
             if (parsedInput) {
                 skipped = string.substr(0, string.indexOf(parsedInput));
                 if (skipped.length > 0) {
-                    config._pf.unusedInput.push(skipped);
+                    getParsingFlags(config).unusedInput.push(skipped);
                 }
                 string = string.slice(string.indexOf(parsedInput) + parsedInput.length);
                 totalParsedInputLength += parsedInput.length;
             }
             if (formatTokenFunctions[token]) {
                 if (parsedInput) {
-                    config._pf.empty = false;
+                    getParsingFlags(config).empty = false;
                 } else {
-                    config._pf.unusedTokens.push(token);
+                    getParsingFlags(config).unusedTokens.push(token);
                 }
                 addTimeToArrayFromToken(token, parsedInput, config);
             } else if (config._strict && !parsedInput) {
-                config._pf.unusedTokens.push(token);
+                getParsingFlags(config).unusedTokens.push(token);
             }
         }
-        config._pf.charsLeftOver = stringLength - totalParsedInputLength;
+        getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
         if (string.length > 0) {
-            config._pf.unusedInput.push(string);
+            getParsingFlags(config).unusedInput.push(string);
         }
-        if (config._pf.bigHour === true && config._a[HOUR] <= 12) {
-            config._pf.bigHour = undefined;
+        if (getParsingFlags(config).bigHour === true && config._a[HOUR] <= 12 && config._a[HOUR] > 0) {
+            getParsingFlags(config).bigHour = undefined;
         }
         config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
         configFromArray(config);
@@ -23622,7 +23629,7 @@ var Sprint;
     function configFromStringAndArray(config) {
         var tempConfig, bestMoment, scoreToBeat, i, currentScore;
         if (config._f.length === 0) {
-            config._pf.invalidFormat = true;
+            getParsingFlags(config).invalidFormat = true;
             config._d = new Date(NaN);
             return;
         }
@@ -23632,15 +23639,14 @@ var Sprint;
             if (config._useUTC != null) {
                 tempConfig._useUTC = config._useUTC;
             }
-            tempConfig._pf = defaultParsingFlags();
             tempConfig._f = config._f[i];
             configFromStringAndFormat(tempConfig);
             if (!valid__isValid(tempConfig)) {
                 continue;
             }
-            currentScore += tempConfig._pf.charsLeftOver;
-            currentScore += tempConfig._pf.unusedTokens.length * 10;
-            tempConfig._pf.score = currentScore;
+            currentScore += getParsingFlags(tempConfig).charsLeftOver;
+            currentScore += getParsingFlags(tempConfig).unusedTokens.length * 10;
+            getParsingFlags(tempConfig).score = currentScore;
             if (scoreToBeat == null || currentScore < scoreToBeat) {
                 scoreToBeat = currentScore;
                 bestMoment = tempConfig;
@@ -23673,6 +23679,8 @@ var Sprint;
             configFromStringAndArray(config);
         } else if (format) {
             configFromStringAndFormat(config);
+        } else if (isDate(input)) {
+            config._d = input;
         } else {
             configFromInput(config);
         }
@@ -23716,7 +23724,6 @@ var Sprint;
         c._i = input;
         c._f = format;
         c._strict = strict;
-        c._pf = defaultParsingFlags();
         return createFromConfig(c);
     }
     function local__createLocal(input, format, locale, strict) {
@@ -24112,6 +24119,9 @@ var Sprint;
         return this.localeData().postformat(output);
     }
     function from(time, withoutSuffix) {
+        if (!this.isValid()) {
+            return this.localeData().invalidDate();
+        }
         return create__createDuration({
             to: this,
             from: time
@@ -24119,6 +24129,18 @@ var Sprint;
     }
     function fromNow(withoutSuffix) {
         return this.from(local__createLocal(), withoutSuffix);
+    }
+    function to(time, withoutSuffix) {
+        if (!this.isValid()) {
+            return this.localeData().invalidDate();
+        }
+        return create__createDuration({
+            from: this,
+            to: time
+        }).locale(this.locale()).humanize(!withoutSuffix);
+    }
+    function toNow(withoutSuffix) {
+        return this.to(local__createLocal(), withoutSuffix);
     }
     function locale(key) {
         var newLocaleData;
@@ -24201,10 +24223,10 @@ var Sprint;
         return valid__isValid(this);
     }
     function parsingFlags() {
-        return extend({}, this._pf);
+        return extend({}, getParsingFlags(this));
     }
     function invalidAt() {
-        return this._pf.overflow;
+        return getParsingFlags(this).overflow;
     }
     addFormatToken(0, [ "gg", 2 ], 0, function() {
         return this.weekYear() % 100;
@@ -24300,7 +24322,7 @@ var Sprint;
         if (weekday != null) {
             week.d = weekday;
         } else {
-            config._pf.invalidWeekday = input;
+            getParsingFlags(config).invalidWeekday = input;
         }
     });
     addWeekParseToken([ "d", "e", "E" ], function(input, week, config, token) {
@@ -24391,7 +24413,7 @@ var Sprint;
     });
     addParseToken([ "h", "hh" ], function(input, array, config) {
         array[HOUR] = toInt(input);
-        config._pf.bigHour = true;
+        getParsingFlags(config).bigHour = true;
     });
     function localeIsPM(input) {
         return (input + "").toLowerCase().charAt(0) === "p";
@@ -24454,6 +24476,8 @@ var Sprint;
     momentPrototype__proto.format = format;
     momentPrototype__proto.from = from;
     momentPrototype__proto.fromNow = fromNow;
+    momentPrototype__proto.to = to;
+    momentPrototype__proto.toNow = toNow;
     momentPrototype__proto.get = getSet;
     momentPrototype__proto.invalidAt = invalidAt;
     momentPrototype__proto.isAfter = isAfter;
@@ -24758,13 +24782,13 @@ var Sprint;
                 return days * 24 + milliseconds / 36e5;
 
               case "minute":
-                return days * 24 * 60 + milliseconds / 6e4;
+                return days * 1440 + milliseconds / 6e4;
 
               case "second":
-                return days * 24 * 60 * 60 + milliseconds / 1e3;
+                return days * 86400 + milliseconds / 1e3;
 
               case "millisecond":
-                return Math.floor(days * 24 * 60 * 60 * 1e3) + milliseconds;
+                return Math.floor(days * 864e5) + milliseconds;
 
               default:
                 throw new Error("Unknown unit " + units);
@@ -24905,7 +24929,7 @@ var Sprint;
     addParseToken("x", function(input, array, config) {
         config._d = new Date(toInt(input));
     });
-    utils_hooks__hooks.version = "2.10.2";
+    utils_hooks__hooks.version = "2.10.3";
     setHookCallback(local__createLocal);
     utils_hooks__hooks.fn = momentPrototype;
     utils_hooks__hooks.min = min;
@@ -26547,6 +26571,15 @@ if (typeof Object.getPrototypeOf !== "function") {
         };
     } ]);
 })();
+angular.module("templates", []).run([ "$templateCache", function($templateCache) {
+    $templateCache.put("features/_feature/_feature.html", "\n");
+    $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <ul>\n    <li ng-if="!!stream" ng-repeat="stream in user.streams">\n      <h2>\n        {{stream.title}}\n      </h2>\n      <p>\n        {{stream.completed | amCalendar}}\n      </p>\n    </li>\n  </ul>\n</div>\n');
+    $templateCache.put("features/login/_login.html", '<div class="wrapper">\n  <a ng-click="login()">Login with Twitter</a>\n</div>\n');
+    $templateCache.put("features/stream/_stream.html", "\n");
+    $templateCache.put("features/title/_title.html", '<div class="wrapper">\n  <input autofocus="true" ng-model="title" placeholder="untitled" type="text" />\n</div>\n<div class="wrapper dark">\n  <a class="button" ui-sref="write">Back</a>\n  <div class="stream-actions">\n    <a class="button" ng-click="save()">{{saving?\'Saving...\':\'Done\'}}</a>\n  </div>\n</div>\n');
+    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false; complete_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n<div class="wrapper dark">\n  <div class="stream-actions">\n    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}" ng-click="complete()">Complete</a>\n  </div>\n</div>\n');
+    $templateCache.put("patterns/_pattern/_pattern.html", "");
+} ]);
 angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com").factory("Auth", function($firebaseAuth) {
     var ref = new Firebase("https://joyce.firebaseio.com");
     return $firebaseAuth(ref);
@@ -26565,7 +26598,8 @@ angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com")
             frozen: false,
             created: date,
             written: "",
-            writing: ""
+            writing: "",
+            tags: []
         });
         return streamRef.key();
     };
@@ -26587,11 +26621,19 @@ angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com")
         return deferred.promise;
     };
     service.abandon = function(streamObj) {
-        delete User.streams[User.latest];
+        if (User.streams) delete User.streams[User.latest];
         delete User.latest;
         return $q.all([ streamObj.$remove(), User.$save() ]);
     };
     return service;
+}).factory("Alchemy", function($resource) {
+    return function(text) {
+        return $resource("https://access.alchemyapi.com/calls/text/TextGetRankedTaxonomy", {
+            apikey: "e60e2344a23b3ebfe425e5792d8e203b906e235d",
+            text: text,
+            outputMode: "json"
+        });
+    };
 });
 angular.module("states", []).run(function($rootScope, $state) {
     $rootScope.$on("$stateChangeError", function(event, toState, toParams, fromState, fromParams, error) {
@@ -26649,6 +26691,18 @@ angular.module("states", []).run(function($rootScope, $state) {
                 return Auth.$requireAuth();
             } ]
         }
+    }).state("title", {
+        url: "/title",
+        templateUrl: templater("title"),
+        controller: "titleController",
+        params: {
+            text: null
+        },
+        resolve: {
+            currentAuth: [ "Auth", function(Auth) {
+                return Auth.$requireAuth();
+            } ]
+        }
     }).state("stream", {
         url: "/stream/:id",
         templateUrl: templater("stream"),
@@ -26670,6 +26724,7 @@ angular.module("<%= name%>", []).controller("<%= name%>Controller", function($sc
 angular.module("home", []).controller("homeController", function($scope, User) {
     User.$bindTo($scope, "user");
 });
+angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26691,9 +26746,48 @@ angular.module("login", []).controller("loginController", function($scope, $stat
         });
     };
 });
+angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
+    if (!User.latest) {
+        $state.go("write");
+    } else {
+        var stream = Stream.get(User.latest);
+        Alchemy($stateParams.text).get().$promise.then(function(response) {
+            stream.tags = [];
+            response.taxonomy.filter(function(current) {
+                return !current.confident || current.confident != "no";
+            }).forEach(function(current) {
+                stream.tags.push(current.label.split("/")[1]);
+            });
+        });
+        $scope.title = "";
+    }
+    $scope.save = function() {
+        if (!$scope.title) $scope.title = "untitled";
+        $scope.saving = true;
+        var completed = new Date().getTime();
+        delete User.latest;
+        User.streams[stream.$id] = {
+            completed: completed,
+            title: $scope.title
+        };
+        var userProm = User.$save();
+        stream.written = stream.written + stream.writing;
+        delete stream.writing;
+        stream.frozen = true;
+        stream.title = $scope.title;
+        stream.completed = completed;
+        var streamProm = stream.$save();
+        $q.all([ userProm, streamProm ]).then(function() {
+            $state.go("home");
+        });
+    };
+});
 angular.module("write", []).controller("writeController", function($scope, Stream, $state) {
     $scope.words = 0;
     $scope.stream = false;
+    $scope.title = "";
+    $scope.abandon_confirm = false;
+    $scope.complete_confirm = false;
     var streamRef;
     Stream.getLatest().then(function(streamObj) {
         streamRef = streamObj;
@@ -26707,8 +26801,8 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         return false;
     };
     $scope.updateWords = function(e) {
-        var text = $scope.stream.writing + $scope.stream.written;
-        var spaces = text.split(" "), lines = [];
+        var text = $scope.stream.writen + $scope.stream.writing;
+        var spaces = text ? text.split(" ") : [], lines = [];
         for (var i = 0; i < spaces.length; i++) {
             lines = lines.concat(spaces[i].split("\n"));
         }
@@ -26720,11 +26814,9 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         });
     };
     $scope.complete = function() {
-        if (!$scope.complete_confirm) $scope.complete_confirm = true; else {
-            Stream.complete(streamRef).then(function() {
-                $state.go("home");
-            });
-        }
+        $state.go("title", {
+            text: $scope.stream.written + $scope.stream.writing
+        });
     };
 }).directive("overflow", function($timeout) {
     return {
@@ -26763,7 +26855,6 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         }
     };
 });
-angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
     return {
         restrict: "E",
@@ -26772,15 +26863,7 @@ angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
         templateUrl: "patterns/<%= name%>/_<%= name%>.html"
     };
 }).controller("<%= name%>Controller", function($scope, $element) {});
-angular.module("templates", []).run([ "$templateCache", function($templateCache) {
-    $templateCache.put("features/_feature/_feature.html", "\n");
-    $templateCache.put("features/home/_home.html", '<div class="wrapper center anim-slide-below-fade">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <ul>\n    <li ng-if="!!date" ng-repeat="(id, date) in user.streams">\n      {{date}}\n    </li>\n  </ul>\n</div>\n');
-    $templateCache.put("features/login/_login.html", '<div class="wrapper">\n  <a ng-click="login()">Login with Twitter</a>\n</div>\n');
-    $templateCache.put("features/stream/_stream.html", "\n");
-    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n<div class="wrapper dark">\n  <div class="stream-actions">\n    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}">Complete</a>\n  </div>\n</div>\n');
-    $templateCache.put("patterns/_pattern/_pattern.html", "");
-} ]);
-angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngSanitize", "states", "anim-in-out", "services", "firebase", "angularMoment", "home", "write", "login" ]).run(function() {
+angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngResource", "ngSanitize", "states", "anim-in-out", "services", "firebase", "angularMoment", "home", "write", "login", "title" ]).run(function() {
     moment.locale("en", {
         calendar: {
             lastDay: "[Yesterday at] h:mma",

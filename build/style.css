@@ -241,77 +241,6 @@ h1 {
 .caption {
   font-style: italic; }
 
-body {
-  background-color: #eee; }
-
-ui-view {
-  position: absolute;
-  left: 0;
-  right: 0; }
-
-.loader {
-  position: fixed;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background-color: #eeeeee; }
-
-.wrapper {
-  padding: 30px 50px;
-  padding-left: calc(50% - 300px);
-  padding-right: calc(50% - 300px);
-  box-sizing: border-box;
-  width: 100%;
-  margin: 0 auto;
-  background-color: #fff;
-  min-height: 165px; }
-  .wrapper.dark {
-    background-color: transparent; }
-
-nav {
-  width: 100%;
-  margin: 0 auto;
-  padding: 30px 0 20px;
-  overflow: hidden;
-  position: relative;
-  height: 30px;
-  background-color: #fff; }
-  nav.slide:hover .nav__slider {
-    -webkit-transform: translateY(-50%);
-    transform: translateY(-50%); }
-  nav h1 {
-    width: 100%;
-    height: 50%;
-    display: block;
-    text-align: center;
-    float: left;
-    margin: 0; }
-    nav h1 a {
-      font-style: italic;
-      line-height: 1.2em;
-      text-decoration: none; }
-    nav h1 .avatar {
-      opacity: 1; }
-      nav h1 .avatar:hover img {
-        opacity: 1;
-        transition: opacity 0.2s; }
-      nav h1 .avatar img {
-        border-radius: 50px;
-        height: 2.6em;
-        opacity: 0.8;
-        margin-left: 1.5em;
-        vertical-align: middle;
-        margin-top: -0.6em; }
-
-.stream-meta {
-  font-size: 0.8em;
-  padding-bottom: 15px; }
-
-.stream-actions {
-  text-align: right; }
-  .stream-actions a {
-    margin-left: 1em; }
-
 input, textarea, button, select, a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
 
@@ -357,3 +286,113 @@ textarea {
   .button.disabled {
     opacity: 0.2;
     pointer-events: none; }
+  .button.ng-animate {
+    transition-duration: 0; }
+
+input {
+  background-color: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 0 10px;
+  box-sizing: border-box;
+  outline: 0;
+  font-size: 2em;
+  width: 100%; }
+  input::-webkit-input-placeholder {
+    font-style: italic; }
+  input::-moz-placeholder {
+    font-style: italic; }
+  input:-ms-input-placeholder {
+    font-style: italic; }
+  input::placeholder {
+    font-style: italic; }
+
+body {
+  background-color: #eee; }
+
+ui-view {
+  position: absolute;
+  left: 0;
+  right: 0; }
+
+.loader {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background-color: #eeeeee; }
+
+.wrapper {
+  padding: 30px;
+  padding-left: calc(50% - 300px);
+  padding-right: calc(50% - 300px);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+  min-height: 165px; }
+  .wrapper.dark {
+    background-color: transparent; }
+  @media only screen and (min-width: 0px) and (max-width: 750px) {
+    .wrapper {
+      padding: 30px; } }
+
+nav {
+  width: 100%;
+  margin: 0 auto;
+  padding: 30px 0 20px;
+  overflow: hidden;
+  position: relative;
+  height: 30px;
+  background-color: #fff; }
+  nav.slide:hover .nav__slider {
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%); }
+  nav h1 {
+    width: 100%;
+    height: 50%;
+    display: block;
+    text-align: center;
+    float: left;
+    margin: 0; }
+    nav h1 a {
+      font-style: italic;
+      line-height: 1.2em;
+      text-decoration: none; }
+    nav h1 .avatar {
+      opacity: 1; }
+      nav h1 .avatar:hover img {
+        opacity: 1;
+        transition: opacity 0.2s; }
+      nav h1 .avatar img {
+        border-radius: 50px;
+        height: 2.6em;
+        opacity: 0.8;
+        margin-left: 1.5em;
+        vertical-align: middle;
+        margin-top: -0.6em; }
+
+.stream-meta {
+  font-size: 0.8em;
+  padding-bottom: 15px; }
+
+.stream-actions {
+  display: inline-block;
+  float: right; }
+  .stream-actions a {
+    margin-left: 1em; }
+  .stream-actions input {
+    margin-right: 0;
+    width: 50%;
+    transition: width 0.2s;
+    width: 50%;
+    opacity: 1; }
+    .stream-actions input.ng-enter, .stream-actions input.ng-hide, .stream-actions input.ng-leave.ng-leave-active {
+      width: 0;
+      opacity: 0;
+      transition: 0.4s ease all; }
+    .stream-actions input.ng-enter.ng-enter-active, .stream-actions input.ng-hide-remove, .stream-actions input.ng-hide-add, .stream-actions input.ng-leave {
+      width: 50%;
+      opacity: 1;
+      transition: 0.4s ease all;
+      display: block !important; }

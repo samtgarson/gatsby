@@ -28,7 +28,8 @@ angular.module('services', [])
                 'frozen': false,
                 'created': date,
                 'written': '',
-                'writing': ''
+                'writing': '',
+                'tags': []
             });
 
             // userRef.push[streamRef.key()] = true;
@@ -56,10 +57,22 @@ angular.module('services', [])
         };
 
         service.abandon = function (streamObj) {
-            delete User.streams[User.latest];
+            if (User.streams) delete User.streams[User.latest];
             delete User.latest;
             return $q.all([streamObj.$remove(), User.$save()]);
         };
 
         return service;
+    })
+    .factory('Alchemy', function($resource){
+        return function(text) {
+            return $resource(
+                "https://access.alchemyapi.com/calls/text/TextGetRankedTaxonomy",
+                {
+                    "apikey": "e60e2344a23b3ebfe425e5792d8e203b906e235d",
+                    "text": text,
+                    "outputMode": 'json'
+
+                });
+        };
     });

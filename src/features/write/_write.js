@@ -2,6 +2,9 @@ angular.module('write', [])
     .controller('writeController', function($scope, Stream, $state) {
         $scope.words = 0;
         $scope.stream = false;
+        $scope.title = '';
+        $scope.abandon_confirm = false;
+        $scope.complete_confirm = false;
         var streamRef;
 
         Stream.getLatest().then(function(streamObj) {
@@ -18,8 +21,8 @@ angular.module('write', [])
         };
 
         $scope.updateWords = function (e) {
-            var text = $scope.stream.writing + $scope.stream.written;
-            var spaces = text.split(' '), lines = [];
+            var text = $scope.stream.writen + $scope.stream.writing;
+            var spaces = text?text.split(' '):[], lines = [];
             for (var i=0;i<spaces.length;i++) {
                 lines = lines.concat(spaces[i].split('\n'));
             }
@@ -34,12 +37,7 @@ angular.module('write', [])
         };
 
         $scope.complete = function () {
-            if (!$scope.complete_confirm) $scope.complete_confirm = true;
-            else {
-                Stream.complete(streamRef).then(function (){
-                    $state.go('home');
-                });
-            }
+            $state.go('title', {text: $scope.stream.written + $scope.stream.writing});
         };
 
 

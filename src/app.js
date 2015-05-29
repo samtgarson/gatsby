@@ -5,6 +5,7 @@ angular.module('app', [
     'breakpointApp',
     'ct.ui.router.extras',
     'ngAnimate',
+    'ngResource',
     'ngSanitize',
     'states',
     'anim-in-out',
@@ -15,7 +16,8 @@ angular.module('app', [
     // Features
     'home',
     'write',
-    'login'
+    'login',
+    'title'
     
     // Patterns
 ])
