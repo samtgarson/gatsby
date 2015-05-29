@@ -26662,7 +26662,7 @@ angular.module("states", []).run(function($rootScope, $state) {
     $locationProvider.html5Mode(true);
     function templater(page, child) {
         if (angular.isUndefined(child)) child = page;
-        return "src/features/" + page + "/_" + child + ".html";
+        return "features/" + page + "/_" + child + ".html";
     }
     $stateProvider.state("login", {
         url: "/login",
@@ -26724,7 +26724,6 @@ angular.module("<%= name%>", []).controller("<%= name%>Controller", function($sc
 angular.module("home", []).controller("homeController", function($scope, User) {
     User.$bindTo($scope, "user");
 });
-angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26746,6 +26745,7 @@ angular.module("login", []).controller("loginController", function($scope, $stat
         });
     };
 });
+angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
     if (!User.latest) {
         $state.go("write");

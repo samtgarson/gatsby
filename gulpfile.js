@@ -14,8 +14,8 @@ var jsFiles = mainBowerFiles().concat(['src/templates.js', 'src/*/**/*.js', 'src
 // Run a local web server
 gulp.task('connect', function() {
   $.connect.server({
-    root: [__dirname],
-    fallback: 'index.html'
+    root: "dist",
+    fallback: 'dist/index.html'
   });
 });
 
@@ -24,7 +24,7 @@ gulp.task('browser-sync', function() {
     return browserSync({
       proxy: 'localhost:8080',
       minify: false,
-      files: ['*.html', 'build/script.js'],
+      files: ['*.html', 'dist/script.js'],
       injectChanges: true,
       open: false
     });
@@ -59,7 +59,7 @@ gulp.task('slim_index', function () {
             pretty: true,
             options: ":attr_list_delims={'(' => ')', '[' => ']'}"
         }))
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./dist'));
 });
 
 // Javascript build
@@ -69,7 +69,7 @@ gulp.task('js', function() {
         // .pipe($.angularFilesort())
         .pipe($.uglify())
         .pipe($.concat('script.js'))
-        .pipe(gulp.dest('build/'));
+        .pipe(gulp.dest('dist/'));
 });
 
 // Javascript build development
@@ -84,7 +84,7 @@ gulp.task('jsDev', function() {
             }
         }))
         .pipe($.concat('script.js'))
-        .pipe(gulp.dest('build/'));
+        .pipe(gulp.dest('dist/'));
 });
 
 
@@ -102,7 +102,7 @@ gulp.task('sass', function () {
             cascade: false
         }))
         .pipe($.minifyCss())
-        .pipe(gulp.dest('build/'));
+        .pipe(gulp.dest('dist/'));
 });
 
 // SASS Development
@@ -119,7 +119,7 @@ gulp.task('sassDev', function () {
             browsers: ['last 2 versions'],
             cascade: false
         }))
-        .pipe(gulp.dest('build/'))
+        .pipe(gulp.dest('dist/'))
         .pipe($.filter('*.css'))
         .pipe(browserSync.reload({stream:true}));
 });
@@ -138,7 +138,7 @@ gulp.task('build', ['js', 'sass']);
 
 // Build then add and commit
 gulp.task('commit', ['build'], function(){
-    gulp.src(['build/script.js', 'build/style.css'])
+    gulp.src(['dist/script.js', 'dist/style.css'])
         .pipe($.git.add())
         .pipe($.git.commit('Build'));
 });
