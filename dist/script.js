@@ -26721,9 +26721,6 @@ angular.module("states", []).run(function($rootScope, $state) {
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
-angular.module("home", []).controller("homeController", function($scope, User) {
-    User.$bindTo($scope, "user");
-});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26731,19 +26728,24 @@ angular.module("login", []).controller("loginController", function($scope, $stat
         $scope.error = null;
         Auth.$authWithOAuthPopup("twitter").then(function(authData) {
             var ref = new Firebase(Endpoint + "/users/" + authData.uid), user = $firebaseObject(ref);
-            if (!user.$value) {
-                user.name = authData.twitter.displayName;
-                user.handle = authData.twitter.username;
-                user.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, "_bigger.");
-                user.latest = false;
-                user.$save().then(function() {
+            user.$loaded().then(function() {
+                if (!user.name) {
+                    user.name = authData.twitter.displayName;
+                    user.handle = authData.twitter.username;
+                    user.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, "_bigger.");
+                    user.latest = false;
+                    user.$save().then(function() {
+                        $state.go("home");
+                    });
+                } else {
                     $state.go("home");
-                });
-            } else {
-                $state.go("home");
-            }
+                }
+            });
         });
     };
+});
+angular.module("home", []).controller("homeController", function($scope, User) {
+    User.$bindTo($scope, "user");
 });
 angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
