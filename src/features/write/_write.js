@@ -22,6 +22,7 @@ angular.module('write', [])
 
         $scope.updateWords = function (e) {
             var text = $scope.stream.writen + $scope.stream.writing;
+            text = text=="undefined"?'':text;
             var spaces = text?text.split(' '):[], lines = [];
             for (var i=0;i<spaces.length;i++) {
                 lines = lines.concat(spaces[i].split('\n'));

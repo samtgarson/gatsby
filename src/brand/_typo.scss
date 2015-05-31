@@ -1,9 +1,6 @@
-@import url(https://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic|Oswald);
+h1, .h1 { font-size: 300%; font-weight: 100; line-height: 1.2em; display: inline-block;}
 
-h1, .h1 { font-size: 300%; letter-spacing: -2px; font-weight: 100; line-height: 1.2em; display: inline-block;}
-.small h1, .small .h1 {font-size: 180%; font-weight: 300; letter-spacing: -1px;}
-
-h2, .h2 { font-size: 250%; letter-spacing: -1px; font-weight: 100; line-height: 1.2em; display: inline-block;}
+h2, .h2 { font-size: 250%; font-weight: 100; line-height: 1.2em; display: inline-block;}
 
 h3, .h3 { font-size: 200%; font-weight: 100; line-height: calc(200% * 1.2); display: inline-block;}
 
@@ -11,15 +8,38 @@ h4, .h4 { font-size: 180%; font-weight: 300; line-height: calc(180% * 1.2); disp
 
 h5, .h5 { font-size: 130%; font-weight: 300; line-height: calc(130% * 1.2); display: inline-block;}
 
-$line-height: 27px;
+@font-face {
+    font-family: 'MajestiBanner';
+    src: url('fonts/Majesti-Banner-Light.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'MajestiBanner';
+    src: url('fonts/Majesti-Banner-LightItalic.otf') format('opentype');
+    font-weight: normal;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'MajestiBanner';
+    src: url('fonts/Majesti-Banner-Heavy.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'MajestiBanner';
+    src: url('fonts/Majesti-Banner-HeavyItalic.otf') format('opentype');
+    font-weight: bold;
+    font-style: italic;
+}
 
 @mixin alt-font {
-    font-family: "Oswald", sans-serif;
+    font-family: "Gotham Rounded", sans-serif;
+    font-weight: 200;
+    letter-spacing: 7px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    
-    opacity: .4;
-    -webkit-font-smoothing: subpixel-antialiased
+    font-size: .7em;
+    // -webkit-font-smoothing: subpixel-antialiased
 }
 
 .faded {
@@ -27,10 +47,11 @@ $line-height: 27px;
 }
 
 body {
-    font-family: 'Libre Baskerville', serif;
-    -webkit-font-smoothing: antialiased;
+    font-family: "MajestiBanner", sans-serif;
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-weight: normal;
     font-size: 16px;
-    line-height: $line-height;
+    color: $black;
 }
 
 p, textarea {
@@ -40,17 +61,14 @@ p, textarea {
 
 a {
     cursor: pointer;
-    transition: opacity .2s;
     color: inherit;
-
-    &:hover {
-        opacity: 1 !important;
-    }
+    text-decoration: none;
 }
 
 h1 {
-    font-size: 1em;
-    @include alt-font;
+    font-size: 2em;
+    font-weight: bold;
+    font-style: italic;
 }
 .caption {
     font-style: italic;

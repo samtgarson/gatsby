@@ -26572,12 +26572,12 @@ if (typeof Object.getPrototypeOf !== "function") {
     } ]);
 })();
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
-    $templateCache.put("features/_feature/_feature.html", "\n");
     $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <ul>\n    <li ng-if="!!stream" ng-repeat="stream in user.streams">\n      <h2>\n        {{stream.title}}\n      </h2>\n      <p>\n        {{stream.completed | amCalendar}}\n      </p>\n    </li>\n  </ul>\n</div>\n');
-    $templateCache.put("features/login/_login.html", '<div class="wrapper">\n  <a ng-click="login()">Login with Twitter</a>\n</div>\n');
+    $templateCache.put("features/_feature/_feature.html", "\n");
     $templateCache.put("features/stream/_stream.html", "\n");
+    $templateCache.put("features/login/_login.html", '<div class="wrapper center">\n  <a class="button" ng-click="login()">Login with Twitter</a>\n</div>\n');
     $templateCache.put("features/title/_title.html", '<div class="wrapper">\n  <input autofocus="true" ng-model="title" placeholder="untitled" type="text" />\n</div>\n<div class="wrapper dark">\n  <a class="button" ui-sref="write">Back</a>\n  <div class="stream-actions">\n    <a class="button" ng-click="save()">{{saving?\'Saving...\':\'Done\'}}</a>\n  </div>\n</div>\n');
-    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false; complete_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n<div class="wrapper dark">\n  <div class="stream-actions">\n    <a class="button" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}" ng-click="complete()">Complete</a>\n  </div>\n</div>\n');
+    $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false; complete_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-actions">\n    <a class="button minor" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}" ng-click="complete()">Complete</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n');
     $templateCache.put("patterns/_pattern/_pattern.html", "");
 } ]);
 angular.module("services", []).value("Endpoint", "https://joyce.firebaseio.com").factory("Auth", function($firebaseAuth) {
@@ -26721,6 +26721,9 @@ angular.module("states", []).run(function($rootScope, $state) {
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
+angular.module("home", []).controller("homeController", function($scope, User) {
+    User.$bindTo($scope, "user");
+});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26743,9 +26746,6 @@ angular.module("login", []).controller("loginController", function($scope, $stat
             });
         });
     };
-});
-angular.module("home", []).controller("homeController", function($scope, User) {
-    User.$bindTo($scope, "user");
 });
 angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
@@ -26804,6 +26804,7 @@ angular.module("write", []).controller("writeController", function($scope, Strea
     };
     $scope.updateWords = function(e) {
         var text = $scope.stream.writen + $scope.stream.writing;
+        text = text == "undefined" ? "" : text;
         var spaces = text ? text.split(" ") : [], lines = [];
         for (var i = 0; i < spaces.length; i++) {
             lines = lines.concat(spaces[i].split("\n"));

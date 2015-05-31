@@ -1,4 +1,3 @@
-@import url(https://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic|Oswald);
 .anim-in-out.anim-in-setup.anim-fade, .anim-in-out.anim-in-setup .anim-fade {
   opacity: 0; }
 
@@ -175,19 +174,12 @@
 
 h1, .h1 {
   font-size: 300%;
-  letter-spacing: -2px;
   font-weight: 100;
   line-height: 1.2em;
   display: inline-block; }
 
-.small h1, .small .h1 {
-  font-size: 180%;
-  font-weight: 300;
-  letter-spacing: -1px; }
-
 h2, .h2 {
   font-size: 250%;
-  letter-spacing: -1px;
   font-weight: 100;
   line-height: 1.2em;
   display: inline-block; }
@@ -210,14 +202,39 @@ h5, .h5 {
   line-height: calc(130% * 1.2);
   display: inline-block; }
 
+@font-face {
+  font-family: 'MajestiBanner';
+  src: url('fonts/Majesti-Banner-Light.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: 'MajestiBanner';
+  src: url('fonts/Majesti-Banner-LightItalic.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic; }
+
+@font-face {
+  font-family: 'MajestiBanner';
+  src: url('fonts/Majesti-Banner-Heavy.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal; }
+
+@font-face {
+  font-family: 'MajestiBanner';
+  src: url('fonts/Majesti-Banner-HeavyItalic.otf') format('opentype');
+  font-weight: bold;
+  font-style: italic; }
+
 .faded {
   opacity: 0.5; }
 
 body {
-  font-family: 'Libre Baskerville', serif;
-  -webkit-font-smoothing: antialiased;
+  font-family: "MajestiBanner", sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-weight: normal;
   font-size: 16px;
-  line-height: 27px; }
+  color: #4C4C4C; }
 
 p, textarea {
   margin: 0;
@@ -225,18 +242,13 @@ p, textarea {
 
 a {
   cursor: pointer;
-  transition: opacity 0.2s;
-  color: inherit; }
-  a:hover {
-    opacity: 1 !important; }
+  color: inherit;
+  text-decoration: none; }
 
 h1 {
-  font-size: 1em;
-  font-family: "Oswald", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  opacity: 0.4;
-  -webkit-font-smoothing: subpixel-antialiased; }
+  font-size: 2em;
+  font-weight: bold;
+  font-style: italic; }
 
 .caption {
   font-style: italic; }
@@ -265,8 +277,10 @@ input, textarea, button, select, a {
 textarea {
   width: 100%;
   max-width: 100%;
-  height: 81px;
-  max-height: 81px;
+  font-weight: normal;
+  font-size: 35px;
+  height: 168px;
+  max-height: 168px;
   outline: none;
   border: 0;
   box-sizing: border-box;
@@ -275,19 +289,27 @@ textarea {
   margin-bottom: 2em; }
 
 .button {
-  font-size: 1.2em;
+  font-family: "Gotham Rounded", sans-serif;
+  font-weight: 200;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+  font-size: 0.7em;
   margin: 1em 0;
-  text-decoration: underline;
   display: inline-block;
-  opacity: 0.6;
-  transition: opacity 0.4s; }
+  transition: -webkit-transform 0.4s ease-out;
+  transition: transform 0.4s ease-out;
+  border: 2px solid #7f7f7f;
+  padding: 16px 40px; }
   .button:hover {
-    opacity: 1; }
+    -webkit-transform: translateY(2px);
+    transform: translateY(2px); }
   .button.disabled {
-    opacity: 0.2;
+    color: #ccc;
     pointer-events: none; }
   .button.ng-animate {
     transition-duration: 0; }
+  .button.minor {
+    border: 0; }
 
 input {
   background-color: transparent;
@@ -308,7 +330,7 @@ input {
     font-style: italic; }
 
 body {
-  background-color: #eee; }
+  background-color: #ECFFFF; }
 
 ui-view {
   position: absolute;
@@ -323,13 +345,14 @@ ui-view {
   background-color: #eeeeee; }
 
 .wrapper {
-  padding: 30px;
-  padding-left: calc(50% - 300px);
-  padding-right: calc(50% - 300px);
+  padding-top: 50px;
+  padding-bottom: 30px;
+  padding-left: calc(50% - 350px);
+  padding-right: calc(50% - 350px);
   box-sizing: border-box;
-  width: 100%;
+  max-width: calc(100% - 200px);
   margin: 0 auto;
-  background-color: #fff;
+  background-color: #ffffff;
   min-height: 165px; }
   .wrapper.dark {
     background-color: transparent; }
@@ -341,13 +364,13 @@ nav {
   width: 100%;
   margin: 0 auto;
   padding: 30px 0 20px;
-  overflow: hidden;
   position: relative;
   height: 30px;
-  background-color: #fff; }
-  nav.slide:hover .nav__slider {
-    -webkit-transform: translateY(-50%);
-    transform: translateY(-50%); }
+  z-index: 1;
+  box-sizing: border-box;
+  transition: height 0.2s ease-out; }
+  nav:hover {
+    height: 300px; }
   nav h1 {
     width: 100%;
     height: 50%;
@@ -355,30 +378,21 @@ nav {
     text-align: center;
     float: left;
     margin: 0; }
-    nav h1 a {
-      font-style: italic;
-      line-height: 1.2em;
-      text-decoration: none; }
-    nav h1 .avatar {
-      opacity: 1; }
-      nav h1 .avatar:hover img {
-        opacity: 1;
-        transition: opacity 0.2s; }
-      nav h1 .avatar img {
-        border-radius: 50px;
-        height: 2.6em;
-        opacity: 0.8;
-        margin-left: 1.5em;
-        vertical-align: middle;
-        margin-top: -0.6em; }
 
 .stream-meta {
   font-size: 0.8em;
-  padding-bottom: 15px; }
+  padding-bottom: 15px;
+  margin-bottom: -40px;
+  font-family: "Gotham Rounded", sans-serif;
+  font-weight: 200;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+  font-size: 0.7em; }
 
 .stream-actions {
-  display: inline-block;
-  float: right; }
+  display: block;
+  text-align: right;
+  margin-bottom: 50px; }
   .stream-actions a {
     margin-left: 1em; }
   .stream-actions input {

@@ -36,10 +36,13 @@ a {
 @mixin desktop {
     @media only screen and (min-width: 750px) { @content; }
 }
-
+$font-size: 35px;
+$line-height: 1.6*$font-size;
 textarea {
     width: 100%;
     max-width: 100%;
+    font-weight: normal;
+    font-size: $font-size;
     height: #{$line-height * 3};
     max-height: #{$line-height * 3};
     outline: none;
@@ -51,24 +54,28 @@ textarea {
 }
 
 .button {
-    font-size: 1.2em;
+    @include alt-font;
     margin: 1em 0;
-    text-decoration: underline;
     display: inline-block;
-    opacity: .6;
-    transition: opacity .4s;
+    transition: transform .4s ease-out;
+    border: 2px solid $grey;
+    padding: 16px 40px;
 
     &:hover {
-        opacity: 1;
+        transform: translateY(2px);
     }
 
     &.disabled {
-        opacity: .2;
+        color: #ccc;
         pointer-events: none;
     }
 
     &.ng-animate {
         transition-duration: 0;
+    }
+
+    &.minor {
+        border: 0;
     }
 }
 
