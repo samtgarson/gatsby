@@ -1,12 +1,12 @@
 angular.module('services', [])
-    .value('Endpoint', 'https://joyce.firebaseio.com')
-    .factory("Auth", function($firebaseAuth) {
-        var ref = new Firebase("https://joyce.firebaseio.com");
+    .value('Endpoint', 'https://gatsbyio.firebaseio.com')
+    .factory("Auth", function($firebaseAuth, Endpoint) {
+        var ref = new Firebase(Endpoint);
         return $firebaseAuth(ref);
     })
 
-    .factory("User", function($firebaseObject, Auth) {
-        var ref = new Firebase("https://joyce.firebaseio.com/users/" + Auth.$getAuth().uid);
+    .factory("User", function($firebaseObject, Endpoint, Auth) {
+        var ref = new Firebase(Endpoint + "/users/" + Auth.$getAuth().uid);
         return $firebaseObject(ref);
     })
 
