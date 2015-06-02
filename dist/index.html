@@ -16,9 +16,26 @@
   </head>
   <body>
     <nav ng-class="{&#39;slide&#39;: !!name}">
-      <h1>
-        gatsby
-      </h1>
+      <a ui-sref="home">
+        <h1>
+          gatsby
+        </h1>
+      </a>
+      <div class="wrapper profile" ng-if="name">
+        <div class="left">
+          <img id="avatar" ng-src="{{avatar | avatarSizer}}" />
+          <h3 id="name">
+            {{name}}
+          </h3>
+        </div>
+        <div class="right">
+          <h2>
+            {{user.streams | objectFilter}}
+          </h2>
+          <h6 count="user.streams | objectFilter" ng-pluralize="" when="{&#39;1&#39;: &#39;stream&#39;, &#39;other&#39;: &#39;streams&#39;}"></h6>
+          <a class="button" ui-sref="logout">logout</a>
+        </div>
+      </div>
     </nav>
     <ui-view class="anim-in-out anim-fade" data-anim-speed="100"></ui-view>
   </body>

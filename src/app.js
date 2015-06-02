@@ -33,12 +33,15 @@ angular.module('app', [
             }
         });
     })
-    .controller('appController', function ($scope, Auth, $state) {
+    .controller('appController', function ($scope, Auth, $state, User) {
         $scope.title = "Joyce";
         Auth.$onAuth(function(authData) {
             if (authData) {
                 $scope.name = authData.twitter.displayName;
                 $scope.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, '_bigger.');
+                User.$loaded(function(user) {
+                    $scope.user = user;
+                })
             } else {
                 $scope.name = false;
                 $scope.avatar = false;
@@ -48,7 +51,9 @@ angular.module('app', [
         $scope.$on('$stateChangeSuccess', function(e, toState) {
             $scope.title = toState.title?toState.title:'Joyce';
         });
-        
-        
+    }).filter('avatarSizer', function() {
+        return function(s) {
+            return s.replace(/_(normal|bigger|mini)/, '');
+        };
     });
 

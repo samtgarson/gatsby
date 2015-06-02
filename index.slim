@@ -21,6 +21,15 @@ html lang="en" ng-app="app" ng-controller="appController"
 
     body
         nav ng-class="{'slide': !!name}"
-            h1 gatsby
+            a ui-sref="home" 
+                h1 gatsby
+            .wrapper.profile ng-if="name"
+                .left
+                    img#avatar ng-src="{{avatar | avatarSizer}}"
+                    h3#name {{name}}
+                .right
+                    h2 {{user.streams | objectFilter}}
+                    h6 ng-pluralize="" count="user.streams | objectFilter" when="{'1': 'stream', 'other': 'streams'}"
+                    a.button ui-sref="logout" logout
         ui-view.anim-in-out.anim-fade data-anim-speed="100"
     

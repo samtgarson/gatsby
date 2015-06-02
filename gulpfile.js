@@ -24,7 +24,7 @@ gulp.task('browser-sync', function() {
     return browserSync({
       proxy: 'localhost:8080',
       minify: false,
-      files: ['**/*.html', 'dist/script.js'],
+      files: ['dist/index.html', 'dist/script.js'],
       injectChanges: true,
       open: false
     });
@@ -32,14 +32,14 @@ gulp.task('browser-sync', function() {
 
 
 // Generate angular templates
-gulp.task('tpl', ['slim'], function () {
-    gulp.src("src/**/*.html")
-        .pipe($.angularTemplatecache({'standalone': true}))
-        .pipe(gulp.dest('./src/'));
-});
+// gulp.task('tpl', ['slim'], function () {
+//     gulp.src("src/**/*.html")
+//         .pipe($.angularTemplatecache({'standalone': true}))
+//         .pipe(gulp.dest('./src/'));
+// });
 
 // Generate slim templates
-gulp.task('slim', function () {
+gulp.task('tpl', function () {
     gulp.src("src/**/*.slim")
         .pipe($.plumber({
             errorHandler: $.notify.onError("<%= error.message %>")}))
@@ -47,6 +47,8 @@ gulp.task('slim', function () {
             pretty: true,
             options: "attr_list_delims={'(' => ')', '[' => ']'}"
         }))
+        .pipe($.angularTemplatecache({'standalone': true}))
+        .pipe(gulp.dest('./src/'))
         .pipe(gulp.dest('./src/'));
 });
 

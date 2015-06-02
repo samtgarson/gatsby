@@ -1,6 +1,9 @@
 <div class="wrapper center">
   <a class="button" ui-sref="write">{{user.latest?'Continue writing':'Start writing'}}</a>
-  <ul>
+  <h6>
+    12345
+  </h6>
+  <ul class="streams">
     <li ng-if="!!stream" ng-repeat="stream in user.streams">
       <h2>
         {{stream.title}}

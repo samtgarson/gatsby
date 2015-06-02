@@ -1,7 +1,8 @@
 .wrapper.center
     a.button ui-sref="write" {{user.latest?'Continue writing':'Start writing'}}
     
-    ul
+    h6 ng-if="user.streams | objectFilter" Recently
+    ul.streams
         li ng-repeat="stream in user.streams" ng-if="!!stream" 
             h2 {{stream.title}}
             p {{stream.completed | amCalendar}}

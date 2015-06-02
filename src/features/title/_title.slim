@@ -2,6 +2,5 @@
     input type="text" placeholder="untitled" ng-model="title" autofocus="true"
 
 .wrapper.dark
-    a.button ui-sref="write" Back
-    .stream-actions
-        a.button ng-click="save()" {{saving?'Saving...':'Done'}}
+    a.button.minor ui-sref="write" Back
+    a.button.right ng-click="save()" {{saving?'Saving...':'Done'}}

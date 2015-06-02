@@ -216,13 +216,13 @@ h5, .h5 {
 
 @font-face {
   font-family: 'MajestiBanner';
-  src: url('fonts/Majesti-Banner-Heavy.otf') format('opentype');
+  src: url('fonts/Majesti-Banner-Bold.otf') format('opentype');
   font-weight: bold;
   font-style: normal; }
 
 @font-face {
   font-family: 'MajestiBanner';
-  src: url('fonts/Majesti-Banner-HeavyItalic.otf') format('opentype');
+  src: url('fonts/Majesti-Banner-BoldItalic.otf') format('opentype');
   font-weight: bold;
   font-style: italic; }
 
@@ -369,11 +369,42 @@ nav {
   z-index: 1;
   box-sizing: border-box;
   transition: height 0.2s ease-out; }
-  nav:hover {
-    height: 300px; }
+  nav .profile {
+    opacity: 0;
+    transition: opacity 0.2s;
+    text-align: center;
+    pointer-events: none;
+    background-color: transparent;
+    margin-bottom: 0; }
+    nav .profile #avatar {
+      border-radius: 50px;
+      margin: 20px 0;
+      height: 100px;
+      width: 100px; }
+    nav .profile #name {
+      display: block;
+      margin: 0;
+      font-family: "Gotham Rounded", sans-serif;
+      font-weight: 200;
+      letter-spacing: 7px;
+      text-transform: uppercase;
+      font-size: 0.7em; }
+    nav .profile h2, nav .profile h6 {
+      margin: 0; }
+    nav .profile h2 {
+      font-weight: bold;
+      margin-top: 20px; }
+    nav .profile h6 {
+      margin-bottom: 20px; }
+  nav.slide:hover {
+    height: 300px;
+    transition-delay: 0s; }
+    nav.slide:hover .profile {
+      opacity: 1;
+      pointer-events: auto;
+      transition-delay: 0.1s; }
   nav h1 {
     width: 100%;
-    height: 50%;
     display: block;
     text-align: center;
     float: left;
@@ -410,3 +441,29 @@ nav {
       opacity: 1;
       transition: 0.4s ease all;
       display: block !important; }
+
+h6 {
+  font-family: "Gotham Rounded", sans-serif;
+  font-weight: 200;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+  font-size: 0.7em;
+  margin-bottom: 0;
+  margin-top: 60px;
+  opacity: 0.5; }
+
+ul.streams {
+  padding-left: 0; }
+  ul.streams li {
+    list-style-type: none;
+    text-align: left; }
+    ul.streams li h2 {
+      font-weight: bold;
+      line-height: 1em;
+      margin: 10px 0; }
+    ul.streams li p {
+      font-family: "Gotham Rounded", sans-serif;
+      font-weight: 200;
+      letter-spacing: 7px;
+      text-transform: uppercase;
+      font-size: 0.7em; }
