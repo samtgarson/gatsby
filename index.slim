@@ -22,7 +22,7 @@ html lang="en" ng-app="app" ng-controller="appController"
     body
         nav ng-class="{'slide': !!name}"
             a ui-sref="home" 
-                h1 gatsby
+                h1#title gatsby
             .wrapper.profile ng-if="name"
                 .left
                     img#avatar ng-src="{{avatar | avatarSizer}}"
