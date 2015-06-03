@@ -26573,12 +26573,33 @@ if (typeof Object.getPrototypeOf !== "function") {
 })();
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "\n");
-    $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <h6 ng-if="user.streams | objectFilter">\n    Recently\n  </h6>\n  <ul class="streams">\n    <li ng-if="!!stream" ng-repeat="stream in user.streams">\n      <h2>\n        {{stream.title}}\n      </h2>\n      <p>\n        {{stream.completed | amCalendar}}\n      </p>\n    </li>\n  </ul>\n</div>\n');
+    $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <h6 ng-if="user.streams | objectFilter">\n    Recently\n  </h6>\n  <ul class="streams">\n    <li ng-if="!!stream" ng-repeat="(uid, stream) in user.streams">\n      <a ui-sref="view({id: uid})">\n        <h2>\n          {{stream.title}}\n        </h2>\n        <p>\n          {{stream.completed | amCalendar}}\n        </p>\n      </a>\n    </li>\n  </ul>\n</div>\n');
     $templateCache.put("features/login/_login.html", '<div class="wrapper center">\n  <a class="button" ng-click="login()">Login with Twitter</a>\n</div>\n');
-    $templateCache.put("features/stream/_stream.html", "\n");
     $templateCache.put("features/title/_title.html", '<div class="wrapper">\n  <input autofocus="true" ng-model="title" placeholder="untitled" type="text" />\n</div>\n<div class="wrapper dark">\n  <a class="button minor" ui-sref="write">Back</a><a class="button right" ng-click="save()">{{saving?\'Saving...\':\'Done\'}}</a>\n</div>\n');
+    $templateCache.put("features/view/_view.html", '<div class="wrapper">\n  <p class="content">\n    {{stream.written}}\n  </p>\n  <div class="center">\n    <a class="button" ui-sref="home">back</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{stream.completed | amCalendar}}</span>\n  </div>\n</div>\n');
     $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false; complete_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-actions">\n    <a class="button minor" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}" ng-click="complete()">Complete</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n');
 } ]);
+angular.module("filters", []).filter("avatarSizer", function() {
+    return function(s) {
+        return s.replace(/_(normal|bigger|mini)/, "");
+    };
+}).filter("titlecase", function() {
+    return function(s) {
+        s = s === undefined || s === null ? "" : s;
+        return s.toString().toLowerCase().replace(/\b([a-z])/g, function(ch) {
+            return ch.toUpperCase();
+        });
+    };
+}).filter("objectFilter", function() {
+    return function(list) {
+        if (!list) return 0;
+        var keys = Object.keys(list), count = 0;
+        for (var i = 0; i < keys.length; i++) {
+            if (list[keys[i]].completed) count++;
+        }
+        return count;
+    };
+});
 angular.module("services", []).value("Endpoint", "https://gatsbyio.firebaseio.com").factory("Auth", function($firebaseAuth, Endpoint) {
     var ref = new Firebase(Endpoint);
     return $firebaseAuth(ref);
@@ -26702,10 +26723,10 @@ angular.module("states", []).run(function($rootScope, $state) {
                 return Auth.$requireAuth();
             } ]
         }
-    }).state("stream", {
-        url: "/stream/:id",
-        templateUrl: templater("stream"),
-        controller: "streamController",
+    }).state("view", {
+        url: "/view/:id",
+        templateUrl: templater("view"),
+        controller: "viewController",
         resolve: {
             currentAuth: [ "Auth", function(Auth) {
                 return Auth.$requireAuth();
@@ -26720,6 +26741,9 @@ angular.module("states", []).run(function($rootScope, $state) {
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
+angular.module("home", []).controller("homeController", function($scope, User) {
+    User.$bindTo($scope, "user");
+});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26743,19 +26767,6 @@ angular.module("login", []).controller("loginController", function($scope, $stat
         });
     };
 });
-angular.module("home", []).controller("homeController", function($scope, User) {
-    User.$bindTo($scope, "user");
-}).filter("objectFilter", function() {
-    return function(list) {
-        if (!list) return 0;
-        var keys = Object.keys(list), count = 0;
-        for (var i = 0; i < keys.length; i++) {
-            if (list[keys[i]]) count++;
-        }
-        return count;
-    };
-});
-angular.module("stream", []).controller("streamController", function($scope) {});
 angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
     if (!User.latest) {
         $state.go("write");
@@ -26792,6 +26803,24 @@ angular.module("title", []).controller("titleController", function($scope, $stat
         });
     };
 });
+angular.module("view", []).controller("viewController", function($scope, Stream, $stateParams) {
+    Stream.get($stateParams.id).$bindTo($scope, "stream").then(function() {
+        var text = $scope.stream.written;
+        var spaces = text ? text.split(" ") : [], lines = [];
+        for (var i = 0; i < spaces.length; i++) {
+            lines = lines.concat(spaces[i].split("\n"));
+        }
+        $scope.words = lines.length == 1 && lines[0] === "" ? 0 : lines.length;
+    });
+});
+angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
+    return {
+        restrict: "E",
+        scope: {},
+        controller: "<%= name%>Controller as <%= name%>Ctrl",
+        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
+    };
+}).controller("<%= name%>Controller", function($scope, $element) {});
 angular.module("write", []).controller("writeController", function($scope, Stream, $state) {
     $scope.words = 0;
     $scope.stream = false;
@@ -26866,15 +26895,7 @@ angular.module("write", []).controller("writeController", function($scope, Strea
         }
     };
 });
-angular.module("<%= name%>", []).directive("go<%= bigname%>", function() {
-    return {
-        restrict: "E",
-        scope: {},
-        controller: "<%= name%>Controller as <%= name%>Ctrl",
-        templateUrl: "patterns/<%= name%>/_<%= name%>.html"
-    };
-}).controller("<%= name%>Controller", function($scope, $element) {});
-angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngResource", "ngSanitize", "states", "anim-in-out", "services", "firebase", "angularMoment", "home", "write", "login", "title" ]).run(function() {
+angular.module("app", [ "ui.router", "breakpointApp", "ct.ui.router.extras", "ngAnimate", "ngResource", "ngSanitize", "anim-in-out", "firebase", "angularMoment", "templates", "states", "services", "filters", "home", "write", "login", "title", "view" ]).run(function() {
     moment.locale("en", {
         calendar: {
             lastDay: "[Yesterday at] h:mma",
@@ -26885,14 +26906,14 @@ angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router
             sameElse: "ll [at] h:mma"
         }
     });
-}).controller("appController", function($scope, Auth, $state, User) {
-    $scope.title = "Joyce";
+}).controller("appController", function($scope, Auth, $state, Endpoint, $firebaseArray, $filter) {
+    $scope.title = "Gatsby";
     Auth.$onAuth(function(authData) {
         if (authData) {
             $scope.name = authData.twitter.displayName;
             $scope.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, "_bigger.");
-            User.$loaded(function(user) {
-                $scope.user = user;
+            $firebaseArray(new Firebase(Endpoint + "/users/" + authData.uid + "/streams")).$loaded(function(streams) {
+                $scope.streams = streams;
             });
         } else {
             $scope.name = false;
@@ -26900,10 +26921,6 @@ angular.module("app", [ "ui.router", "templates", "breakpointApp", "ct.ui.router
         }
     });
     $scope.$on("$stateChangeSuccess", function(e, toState) {
-        $scope.title = toState.title ? toState.title : "Joyce";
+        $scope.title = toState.name ? $filter("titlecase")(toState.name) + " | Gatsby" : "Gatsby";
     });
-}).filter("avatarSizer", function() {
-    return function(s) {
-        return s.replace(/_(normal|bigger|mini)/, "");
-    };
 });

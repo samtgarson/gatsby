@@ -1,0 +1,9 @@
+.wrapper
+    p.content {{stream.written}}
+    .center
+        a.button ui-sref="home" back
+    .stream-meta.center 
+        .left
+            span {{words}} 
+            ng-pluralize.faded count="words" when="{'one': 'word', 'other': 'words'}"
+        span.faded.right  {{stream.completed | amCalendar}}

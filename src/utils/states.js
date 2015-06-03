@@ -83,10 +83,10 @@ angular.module('states', [])
                     }]
                 }
             })
-            .state('stream', {
-                'url'         : '/stream/:id',
-                'templateUrl' : templater('stream'),
-                'controller'  : 'streamController',
+            .state('view', {
+                'url'         : '/view/:id',
+                'templateUrl' : templater('view'),
+                'controller'  : 'viewController',
                 'resolve'     : {
                     "currentAuth"  : ["Auth", function (Auth) {
                         return Auth.$requireAuth();

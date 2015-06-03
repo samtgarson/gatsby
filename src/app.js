@@ -1,23 +1,27 @@
 angular.module('app', [
-    // App
+    // Vendor
     'ui.router',
-    'templates',
     'breakpointApp',
     'ct.ui.router.extras',
     'ngAnimate',
     'ngResource',
     'ngSanitize',
-    'states',
     'anim-in-out',
-    'services',
     'firebase',
     'angularMoment',
+
+    // App
+    'templates',
+    'states',
+    'services',
+    'filters',
 
     // Features
     'home',
     'write',
     'login',
-    'title'
+    'title',
+    'view'
     
     // Patterns
 ])
@@ -33,15 +37,15 @@ angular.module('app', [
             }
         });
     })
-    .controller('appController', function ($scope, Auth, $state, User) {
-        $scope.title = "Joyce";
+    .controller('appController', function ($scope, Auth, $state, Endpoint, $firebaseArray, $filter) {
+        $scope.title = "Gatsby";
         Auth.$onAuth(function(authData) {
             if (authData) {
                 $scope.name = authData.twitter.displayName;
                 $scope.avatar = authData.twitter.cachedUserProfile.profile_image_url.replace(/_[^./]*\./, '_bigger.');
-                User.$loaded(function(user) {
-                    $scope.user = user;
-                })
+                $firebaseArray(new Firebase(Endpoint + '/users/' + authData.uid + '/streams')).$loaded(function(streams) {
+                    $scope.streams = streams;
+                });
             } else {
                 $scope.name = false;
                 $scope.avatar = false;
@@ -49,11 +53,7 @@ angular.module('app', [
         });
 
         $scope.$on('$stateChangeSuccess', function(e, toState) {
-            $scope.title = toState.title?toState.title:'Joyce';
+            $scope.title = toState.name?$filter('titlecase')(toState.name) + ' | Gatsby':'Gatsby';
         });
-    }).filter('avatarSizer', function() {
-        return function(s) {
-            return s.replace(/_(normal|bigger|mini)/, '');
-        };
     });
 

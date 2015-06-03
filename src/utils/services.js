@@ -4,7 +4,6 @@ angular.module('services', [])
         var ref = new Firebase(Endpoint);
         return $firebaseAuth(ref);
     })
-
     .factory("User", function($firebaseObject, Endpoint, Auth) {
         var ref = new Firebase(Endpoint + "/users/" + Auth.$getAuth().uid);
         return $firebaseObject(ref);

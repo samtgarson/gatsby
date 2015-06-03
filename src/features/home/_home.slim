@@ -3,6 +3,7 @@
     
     h6 ng-if="user.streams | objectFilter" Recently
     ul.streams
-        li ng-repeat="stream in user.streams" ng-if="!!stream" 
-            h2 {{stream.title}}
-            p {{stream.completed | amCalendar}}
+        li ng-repeat="(uid, stream) in user.streams" ng-if="!!stream" 
+            a ui-sref="view({id: uid})"
+                h2 {{stream.title}}
+                p {{stream.completed | amCalendar}}

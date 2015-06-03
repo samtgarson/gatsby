@@ -6,7 +6,7 @@ html lang="en" ng-app="app" ng-controller="appController"
 
         base href="/" 
 
-        title ng-bind=""
+        title ng-bind="title"
         meta name="description" content=""
         meta name="author" content=""
         meta name="viewport" content="initial-scale=1, maximum-scale=1, width=device-width"
@@ -28,7 +28,7 @@ html lang="en" ng-app="app" ng-controller="appController"
                     img#avatar ng-src="{{avatar | avatarSizer}}"
                     h3#name {{name}}
                 .right
-                    h2 {{user.streams | objectFilter}}
+                    h2 {{streams | objectFilter}}
                     h6 ng-pluralize="" count="user.streams | objectFilter" when="{'1': 'stream', 'other': 'streams'}"
                     a.button ui-sref="logout" logout
         ui-view.anim-in-out.anim-fade data-anim-speed="100"

@@ -266,7 +266,8 @@ input, textarea, button, select, a {
   float: right; }
 
 .center {
-  text-align: center; }
+  text-align: center;
+  margin-bottom: 40px; }
 
 .align-right {
   text-align: right; }
@@ -279,14 +280,21 @@ textarea {
   max-width: 100%;
   font-weight: normal;
   font-size: 35px;
-  height: 168px;
-  max-height: 168px;
+  line-height: 49px;
+  height: 147px;
+  max-height: 147px;
   outline: none;
   border: 0;
   box-sizing: border-box;
   overflow: hidden;
   resize: none;
   margin-bottom: 2em; }
+
+p.content {
+  font-weight: normal;
+  font-size: 35px;
+  line-height: 49px;
+  margin-bottom: 50px; }
 
 .button {
   font-family: "Gotham Rounded", sans-serif;

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <base href="/" />
-    <title ng-bind=""></title>
+    <title ng-bind="title"></title>
     <meta content="" name="description" />
     <meta content="" name="author" />
     <meta content="initial-scale=1, maximum-scale=1, width=device-width" name="viewport" />
@@ -30,7 +30,7 @@
         </div>
         <div class="right">
           <h2>
-            {{user.streams | objectFilter}}
+            {{streams | objectFilter}}
           </h2>
           <h6 count="user.streams | objectFilter" ng-pluralize="" when="{&#39;1&#39;: &#39;stream&#39;, &#39;other&#39;: &#39;streams&#39;}"></h6>
           <a class="button" ui-sref="logout">logout</a>
