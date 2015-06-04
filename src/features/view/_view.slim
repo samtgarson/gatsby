@@ -1,6 +1,10 @@
 .wrapper
     h1 {{stream.title | titlecase}}
-    p.content {{stream.written}}
+    .content-wrapper comments="stream" ng-style="{'fade': comments_flag}"
+        p.content ng-repeat="para in paragraphs | notBlank" id="{{$index}}"
+            | {{para}}
+            input type="text" placeholder="write a comment"
+    comments stream="stream"
     .center
         a.button ui-sref="home" back
     .stream-meta.center 

@@ -26576,12 +26576,18 @@ angular.module("templates", []).run([ "$templateCache", function($templateCache)
     $templateCache.put("features/home/_home.html", '<div class="wrapper center">\n  <a class="button" ui-sref="write">{{user.latest?\'Continue writing\':\'Start writing\'}}</a>\n  <h6 ng-if="user.streams | objectFilter">\n    Recently\n  </h6>\n  <ul class="streams">\n    <li ng-if="!!stream" ng-repeat="(uid, stream) in user.streams">\n      <a ui-sref="view({id: uid})">\n        <h2>\n          {{stream.title}}\n        </h2>\n        <p>\n          {{stream.completed | amCalendar}}\n        </p>\n      </a>\n    </li>\n  </ul>\n</div>\n');
     $templateCache.put("features/login/_login.html", '<div class="wrapper center">\n  <a class="button" ng-click="login()">Login with Twitter</a>\n</div>\n');
     $templateCache.put("features/title/_title.html", '<div class="wrapper">\n  <input autofocus="true" ng-model="title" placeholder="untitled" type="text" />\n</div>\n<div class="wrapper dark">\n  <a class="button minor" ui-sref="write">Back</a><a class="button right" ng-click="save()">{{saving?\'Saving...\':\'Done\'}}</a>\n</div>\n');
-    $templateCache.put("features/view/_view.html", '<div class="wrapper">\n  <h1>\n    {{stream.title | titlecase}}\n  </h1>\n  <p class="content">\n    {{stream.written}}\n  </p>\n  <div class="center">\n    <a class="button" ui-sref="home">back</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{stream.completed | amCalendar}}</span>\n  </div>\n</div>\n');
+    $templateCache.put("features/view/_view.html", '<div class="wrapper">\n  <h1>\n    {{stream.title | titlecase}}\n  </h1>\n  <div class="content-wrapper" comments="stream" ng-style="{&#39;fade&#39;: comments_flag}">\n    <p class="content" id="{{$index}}" ng-repeat="para in paragraphs | notBlank">\n      {{para}}<input placeholder="write a comment" type="text" />\n    </p>\n  </div>\n  <comments stream="stream"></comments>\n  <div class="center">\n    <a class="button" ui-sref="home">back</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{stream.completed | amCalendar}}</span>\n  </div>\n</div>\n');
     $templateCache.put("features/write/_write.html", '<div class="wrapper">\n  <p class="faded">\n    {{prev}}\n  </p>\n  <textarea autofocus="" ng-change="updateWords()" ng-focus="abandon_confirm=false; complete_confirm=false" ng-model="stream.writing" ng-paste="preventPaste($event)" overflow="stream.written" placeholder="Just write it down" previousLine="prev"></textarea>\n  <div class="stream-actions">\n    <a class="button minor" id="abandon" ng-click="abandon()">{{abandon_confirm?\'Sure?\':\'Abandon\'}}</a><a class="button" id="confirm" ng-class="{&#39;disabled&#39;: !words}" ng-click="complete()">Complete</a>\n  </div>\n  <div class="stream-meta center">\n    <div class="left">\n      <span>{{words}} </span><ng-pluralize class="faded" count="words" when="{&#39;one&#39;: &#39;word&#39;, &#39;other&#39;: &#39;words&#39;}"></ng-pluralize>\n    </div>\n    <span class="faded right"> {{created | amCalendar}}</span>\n  </div>\n</div>\n');
 } ]);
 angular.module("filters", []).filter("avatarSizer", function() {
     return function(s) {
         return s.replace(/_(normal|bigger|mini)/, "");
+    };
+}).filter("notBlank", function() {
+    return function(a) {
+        return a.filter(function(s) {
+            return !!s.length;
+        });
     };
 }).filter("titlecase", function() {
     return function(s) {
@@ -26598,6 +26604,63 @@ angular.module("filters", []).filter("avatarSizer", function() {
             if (list[keys[i]].completed) count++;
         }
         return count;
+    };
+}).directive("comments", function() {
+    return {
+        restrict: "E",
+        scope: {
+            stream: "="
+        },
+        controller: function($scope) {
+            var prevRange = null, sel, id = null;
+            $(document).on("mouseup", function(e) {
+                sel = window.getSelection();
+                if (!sel.isCollapsed && checkEl(sel)) {
+                    clearSelection();
+                    prevRange = sel.getRangeAt(0);
+                    id = parseInt(e.target.id);
+                    $(sel.focusNode.parentElement).addClass("add-comment");
+                } else if (e.target.localName == "input") {
+                    wrapContents(prevRange);
+                    $(".content-wrapper").addClass("fade");
+                    e.preventDefault();
+                    return false;
+                } else {
+                    clearSelection();
+                }
+            }).on("mousedown", function(e) {
+                clearSelection(true);
+            });
+            $("p.content input").on("keypress", function(e) {
+                if (e.which == 13) {
+                    console.log("enter!");
+                }
+            });
+            $scope.$on("$destroy", function() {
+                $(document).off("mouseup mousedown");
+                $("input").off("keypress");
+            });
+            function clearSelection(skipInput) {
+                if (!skipInput) {
+                    id = null;
+                    $(".add-comment").removeClass("add-comment");
+                    prevRange = null;
+                    $(".content-wrapper").removeClass("fade");
+                    $("p.content input").val("");
+                }
+                $("p.content span").replaceWith(function() {
+                    return $(this).text();
+                });
+            }
+            function wrapContents(r) {
+                var n = document.createElement("span");
+                r.surroundContents(n);
+            }
+            function checkEl(sel) {
+                var a = sel.anchorNode.parentElement, f = sel.focusNode.parentElement;
+                return a == f && $(a).hasClass("content");
+            }
+        }
     };
 });
 angular.module("services", []).value("Endpoint", "https://gatsbyio.firebaseio.com").factory("Auth", function($firebaseAuth, Endpoint) {
@@ -26741,9 +26804,6 @@ angular.module("states", []).run(function($rootScope, $state) {
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
-angular.module("home", []).controller("homeController", function($scope, User) {
-    User.$bindTo($scope, "user");
-});
 angular.module("login", []).controller("loginController", function($scope, $state, Auth, currentAuth, Endpoint, $firebaseObject) {
     if (currentAuth) $state.go("home");
     $scope.login = function() {
@@ -26766,6 +26826,9 @@ angular.module("login", []).controller("loginController", function($scope, $stat
             });
         });
     };
+});
+angular.module("home", []).controller("homeController", function($scope, User) {
+    User.$bindTo($scope, "user");
 });
 angular.module("title", []).controller("titleController", function($scope, $state, $stateParams, $q, User, Stream, Alchemy) {
     if (!User.latest) {
@@ -26804,12 +26867,14 @@ angular.module("title", []).controller("titleController", function($scope, $stat
     };
 });
 angular.module("view", []).controller("viewController", function($scope, Stream, $stateParams) {
+    $scope.paragraphs = [];
     Stream.get($stateParams.id).$bindTo($scope, "stream").then(function() {
         var text = $scope.stream.written;
         var spaces = text ? text.split(" ") : [], lines = [];
         for (var i = 0; i < spaces.length; i++) {
             lines = lines.concat(spaces[i].split("\n"));
         }
+        $scope.paragraphs = $scope.stream.written.split("\n");
         $scope.words = lines.length == 1 && lines[0] === "" ? 0 : lines.length;
     });
 });

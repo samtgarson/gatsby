@@ -29,7 +29,7 @@ html lang="en" ng-app="app" ng-controller="appController"
                     h3#name {{name}}
                 .right
                     h2 {{streams | objectFilter}}
-                    h6 ng-pluralize="" count="user.streams | objectFilter" when="{'1': 'stream', 'other': 'streams'}"
+                    h6 ng-pluralize="" count="user.streams | objectFilter" when="{'one': 'stream', 'other': 'streams'}"
                     a.button ui-sref="logout" logout
         ui-view.anim-in-out.anim-fade data-anim-speed="100"
     

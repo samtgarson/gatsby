@@ -235,6 +235,18 @@ body {
   font-weight: normal;
   font-size: 16px;
   color: #4C4C4C; }
+  body *::-moz-selection {
+    background: #4C4C4C;
+    /* WebKit/Blink Browsers */
+    color: #ffffff; }
+  body *::selection {
+    background: #4C4C4C;
+    /* WebKit/Blink Browsers */
+    color: #ffffff; }
+  body *::-moz-selection {
+    background: #4C4C4C;
+    /* Gecko Browsers */
+    color: #ffffff; }
 
 p, textarea {
   margin: 0;
@@ -291,12 +303,6 @@ textarea {
   overflow: hidden;
   resize: none;
   margin-bottom: 2em; }
-
-p.content {
-  font-weight: normal;
-  font-size: 35px;
-  line-height: 49px;
-  margin-bottom: 50px; }
 
 .button {
   font-family: "Gotham Rounded", sans-serif;
@@ -477,3 +483,39 @@ ul.streams {
       letter-spacing: 7px;
       text-transform: uppercase;
       font-size: 0.7em; }
+
+.content-wrapper {
+  position: relative; }
+  .content-wrapper.fade p.content {
+    color: rgba(76, 76, 76, 0.3); }
+  .content-wrapper p.content {
+    font-weight: normal;
+    position: relative;
+    margin-bottom: 30px;
+    font-size: 1.6em;
+    line-height: 140%;
+    word-wrap: break-word;
+    transition: opacity 0.2s, margin 0.2s, color 0.2s; }
+    .content-wrapper p.content span {
+      color: #4C4C4C;
+      padding: 10px 0 2px; }
+    .content-wrapper p.content:last-child {
+      margin-bottom: 60px; }
+    .content-wrapper p.content.add-comment {
+      margin-bottom: 150px;
+      opacity: 1 !important; }
+      .content-wrapper p.content.add-comment input {
+        opacity: 1;
+        pointer-events: auto;
+        transition-delay: 0.15s; }
+    .content-wrapper p.content input {
+      opacity: 0;
+      color: black;
+      pointer-events: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -80px;
+      font-style: italic;
+      font-size: 1.5em;
+      transition: opacity 0.2s; }

@@ -52,6 +52,15 @@ body {
     font-weight: normal;
     font-size: 16px;
     color: $black;
+
+    *::selection {
+        background: $black; /* WebKit/Blink Browsers */
+        color: $white;
+    }
+    *::-moz-selection {
+        background: $black; /* Gecko Browsers */
+        color: $white;
+    }
 }
 
 p, textarea {

@@ -151,3 +151,54 @@ ul.streams {
         }
     }
 }
+.content-wrapper {
+    position: relative;
+
+    &.fade p.content {
+        color: rgba($black, .3);
+    }
+
+    p.content {
+        font-weight: normal;
+        position: relative;
+        margin-bottom: 30px;
+        font-size: 1.6em;
+        line-height: 140%;
+        word-wrap: break-word;
+        transition: opacity .2s, margin .2s, color .2s;
+
+        span {
+            // background-color: rgba($black, 0.2);
+            color: $black;
+            padding: 10px 0 2px;
+        }
+
+        &:last-child {
+            margin-bottom: 60px;
+        }
+
+        &.add-comment {
+            margin-bottom: 150px;
+            opacity: 1 !important;
+
+            input {
+                opacity: 1;
+                pointer-events: auto;
+                transition-delay: .15s;
+            }
+        }
+
+        input {
+            opacity: 0;
+            color: black;
+            pointer-events: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -80px;
+            font-style: italic;
+            font-size: 1.5em;
+            transition: opacity .2s;
+        }
+    }
+}
